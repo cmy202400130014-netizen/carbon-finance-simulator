@@ -1,0 +1,2296 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="电碳金融仿真系统评审版，提供碳履约、期权估值、电碳核算、绿色金融评价和分组检测。">
+  <title>电碳金融仿真系统 · 评审版</title>
+  <style>
+  
+:root {
+  color-scheme: light;
+  --page: #eef4f2;
+  --paper: #fff;
+  --ink: #122723;
+  --muted: #526660;
+  --border: #dbe7e2;
+  --green-dark: #075e4d;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  background: var(--page);
+  color: var(--ink);
+  font-synthesis: none;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { min-width: 0; margin: 0; }
+button, input { color: inherit; font: inherit; }
+button { cursor: pointer; }
+img, canvas { display: block; max-width: 100%; }
+h1, h2, h3, p { margin: 0; }
+
+:where(button, input, summary, a):focus-visible {
+  outline: 3px solid #248975;
+  outline-offset: 3px;
+}
+
+.topbar { background: var(--paper); border-bottom: 1px solid var(--border); }
+.topbar-inner, .shell {
+  width: min(100% - 48px, 1220px);
+  margin-inline: auto;
+}
+.topbar-inner {
+  min-height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.brand { display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 700; }
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: #fff;
+  background: #0b6e59;
+  border-radius: 9px;
+  font-size: 14px;
+}
+.local-label { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.shell { padding-block: 23px 19px; }
+
+.intro {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  overflow: hidden;
+  min-height: 162px;
+  margin-bottom: 19px;
+  padding: clamp(22px, 4vw, 36px);
+  border: 1px solid #c7e1d5;
+  border-radius: 16px;
+  background: linear-gradient(113deg, #f1f9f3 4%, #e2f4e9 57%, #c7e8db 100%);
+}
+.intro::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 54%;
+  z-index: -1;
+  opacity: .48;
+  background-image: radial-gradient(#3d816c54 .7px, transparent .7px);
+  background-size: 11px 11px;
+  mask-image: linear-gradient(90deg, transparent, black);
+  pointer-events: none;
+}
+.intro h1 {
+  font-size: clamp(26px, 3.4vw, 45px);
+  line-height: 1.17;
+  letter-spacing: -.045em;
+  font-weight: 780;
+}
+.intro-copy > p { max-width: 710px; margin-top: 12px; color: #345b4e; font-size: 14px; line-height: 1.55; }
+.source-tag {
+  display: inline-flex;
+  width: fit-content;
+  flex: none;
+  align-items: center;
+  padding: 6px 9px;
+  border: 1px solid #7caf9b80;
+  border-radius: 6px;
+  background: #ffffff94;
+  color: #285748;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: minmax(286px, 322px) minmax(0, 1fr);
+  align-items: start;
+  gap: 17px;
+}
+.panel, .metric, .methods {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  box-shadow: 0 3px 12px #2047390a;
+}
+.panel { min-width: 0; padding: 18px 20px; }
+.panel h2 { font-size: 17px; line-height: 1.3; letter-spacing: -.018em; }
+.panel-note { margin-top: 5px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.controls form { display: grid; gap: 13px; margin-top: 17px; }
+.controls fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.controls legend, .field > span:first-child {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 650;
+}
+.scenario-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px; }
+.scenario {
+  min-height: 35px;
+  padding: 5px 3px;
+  border: 1px solid #d5e5dd;
+  border-radius: 7px;
+  background: #f9fbfa;
+  color: #3e554e;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.scenario:hover { background: #eef8f3; }
+.scenario[aria-pressed="true"] {
+  border-color: #75bda6;
+  background: #e4f5ec;
+  color: #075f4d;
+  font-weight: 700;
+}
+.field-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px 9px; }
+.field { display: block; min-width: 0; }
+.full-width { grid-column: 1 / -1; }
+.input-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  min-height: 38px;
+  padding: 0 7px 0 8px;
+  border: 1px solid #d6e1dc;
+  border-radius: 7px;
+  background: #fff;
+}
+.input-wrap:focus-within { border-color: #579b85; box-shadow: 0 0 0 2px #d9f2e7; }
+.input-wrap input {
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+  padding-block: 7px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+}
+.input-wrap input::-webkit-inner-spin-button,
+.input-wrap input::-webkit-outer-spin-button { margin: 0; appearance: none; }
+.input-wrap input[aria-invalid="true"] { color: #a82f30; }
+.unit { flex: none; color: #4f655e; font-size: 10px; white-space: nowrap; }
+.assumption {
+  padding: 8px 9px;
+  border-radius: 7px;
+  background: #f2f7f5;
+  color: #425d53;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.button {
+  min-height: 38px;
+  padding: 6px 11px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: center;
+  line-height: 1.35;
+}
+.button.primary { background: var(--green-dark); color: #fff; }
+.button.primary:hover { background: #054b3d; }
+.button.secondary { border-color: #d6e3dc; background: #fff; color: #245044; }
+.button.secondary:hover { background: #f0f8f3; }
+.button:disabled { opacity: .55; cursor: default; }
+.error { margin: 0; color: #942626; font-size: 12px; line-height: 1.5; }
+.error:empty { display: none; }
+
+.results { min-width: 0; display: grid; gap: 13px; }
+.metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+.metric { display: grid; align-content: start; gap: 5px; min-width: 0; padding: 13px 15px; }
+.metric.featured { color: #104c3d; border-color: #afdbca; background: #e0f3e9; }
+.metric-label { color: #36554d; font-size: 12px; font-weight: 650; line-height: 1.4; }
+.metric-value { display: flex; align-items: baseline; gap: 4px 6px; flex-wrap: wrap; }
+.metric-value strong {
+  font-size: clamp(18px, 2.3vw, 32px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 730;
+  line-height: 1;
+  letter-spacing: -.035em;
+  overflow-wrap: anywhere;
+}
+.metric-value span { color: #3d6055; font-size: 11px; }
+.metric small { color: var(--muted); font-size: 11px; line-height: 1.4; }
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+.chart-wrap { position: relative; width: 100%; }
+.chart-wrap > canvas { width: 100%; height: 235px; }
+.chart-axis {
+  color: #597068;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.35;
+}
+.legend { display: flex; flex-wrap: wrap; gap: 5px 13px; color: #466159; font-size: 11px; line-height: 1.4; }
+.legend > span { display: inline-flex; align-items: center; gap: 5px; }
+.series-line {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  border-top: 2px solid currentColor;
+  border-radius: 1px;
+  color: var(--series-color, currentColor);
+}
+.series-line.dashed { border-top-style: dashed; }
+.series-line.dotted { border-top-style: dotted; }
+.legend > span:last-child .series-line { border-top-width: 3px; }
+
+.table-wrap { max-width: 100%; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.45; }
+th, td { padding: 8px 10px; border-bottom: 1px solid #e7eeea; text-align: left; }
+th { color: #3b574c; font-weight: 650; }
+thead th { background: #f0f6f3; }
+td { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+th:not(:first-child), td { text-align: right; }
+tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+tbody tr.combination { background: #f0f9f4; color: #095843; font-weight: 650; }
+
+.methods { margin-top: 15px; padding: 0; }
+.methods summary {
+  padding: 12px 17px;
+  color: #2f5347;
+  font-size: 13px;
+  font-weight: 680;
+  cursor: pointer;
+}
+.method-body { padding: 0 17px 13px; color: var(--muted); font-size: 12px; line-height: 1.65; }
+.method-body p + p { margin-top: 6px; }
+
+[hidden] { display: none !important; }
+
+@media (max-width: 850px) {
+  .topbar-inner, .shell { width: min(100% - 32px, 1220px); }
+  .dashboard { grid-template-columns: minmax(244px, 280px) minmax(0,1fr); gap: 12px; }
+  .panel { padding: 15px; }
+  .metric { padding: 11px 9px; }
+  .metrics { gap: 6px; }
+}
+@media (max-width: 670px) {
+  .dashboard { grid-template-columns: minmax(0,1fr); }
+  .shell { padding-top: 15px; }
+  .intro { display: grid; align-content: center; gap: 12px; padding: 20px; margin-bottom: 13px; }
+  .intro-copy > p { margin-top: 8px; font-size: 13px; }
+  .panel { padding: 14px; }
+  .methods { padding: 0; }
+  .input-wrap input { font-size: 16px; }
+  .metric-value strong { font-size: clamp(17px, 4vw, 29px); }
+}
+@media (max-width: 380px) {
+  .topbar-inner, .shell { width: calc(100% - 20px); }
+  .topbar-inner { gap: 8px; min-height: 54px; }
+  .brand { gap: 6px; font-size: 12px; }
+  .brand-mark { height: 27px; width: 27px; }
+  .local-label { font-size: 10px; }
+  .intro { padding: 17px 15px; }
+  .metric { padding-inline: 7px; }
+  .metric-label, .metric small { font-size: 10px; }
+  .chart-wrap > canvas { height: 205px; }
+  th, td { padding-inline: 6px; }
+}
+@media print {
+  :root, .topbar { background: #fff; }
+  .topbar-inner, .shell { width: 100%; }
+  .topbar-inner { min-height: 36px; }
+  .shell { padding-block: 10px; }
+  .dashboard { grid-template-columns: minmax(165px, 28%) minmax(0,1fr); gap: 10px; }
+  .intro { min-height: 0; padding: 12px; }
+  .panel, .metric, .methods, .intro { box-shadow: none; break-inside: avoid; }
+  .panel, .metric { padding: 9px; }
+  .button, .local-label { display: none; }
+  .chart-wrap > canvas { height: 205px; }
+  .intro, .metric.featured, th { print-color-adjust: exact; }
+}
+  :root {
+  --ink: #152924;
+  --review-bg: #edf2ef;
+  --review-accent: #176958;
+  --review-border: #d8e4de;
+  --review-dim: #4d655d;
+  --review-dark: #112b26;
+}
+.review { background: var(--review-bg); color: var(--ink); }
+.review-bar {
+  min-height: 68px; display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; padding: 10px clamp(17px,4vw,55px); background: var(--review-dark); color: #fff;
+}
+.review-brand { display: flex; align-items: center; gap: 11px; }
+.review-mark {
+  width: 36px; height: 36px; flex: none; display: grid; place-items: center;
+  border: 1px solid #88b6a6; border-radius: 9px; background: #1c6254; color: #fff; font-size: 21px;
+}
+.review-brand strong, .review-brand span:not(.review-mark) { display: block; }
+.review-brand strong { font-size: 16px; letter-spacing: .025em; }
+.review-brand span:not(.review-mark) { margin-top: 1px; color: #c4ddd1; font-size: 11px; }
+.review-mode { display: flex; align-items: center; gap: 6px; color: #e3f0e9; font-size: 11px; white-space: nowrap; }
+.review-mode i { width: 7px; height: 7px; border-radius: 50%; background: #87d6b6; }
+.review-shell {
+  width: min(1450px,100%); margin-inline: auto; padding: 23px clamp(16px,3vw,38px) 34px;
+  display: grid; grid-template-columns: 178px minmax(0,1fr); gap: 22px; align-items: start;
+}
+.review-rail { position: sticky; top: 15px; }
+.review-nav { display: grid; gap: 5px; padding: 10px; background: #f9fcfa; border: 1px solid var(--review-border); border-radius: 12px; }
+.review-nav .nav-heading { color: #5c7369; font-size: 11px; margin: 7px 7px 3px; }
+.review-nav a {
+  color: #294a3f; text-decoration: none; font-size: 13px; font-weight: 630;
+  border: 1px solid transparent; border-radius: 7px; padding: 10px 7px;
+}
+.review-nav a:hover { background: #edf6f1; }
+.review-nav a[aria-current] { background: #e0f2e9; border-color: #c2e5d6; color: #115b4a; }
+.rail-tip { color: var(--review-dim); font-size: 11px; padding: 10px; line-height: 1.6; }
+.review-main, .module-panel { min-width: 0; }
+.module-head {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+  min-height: 126px; padding: clamp(17px,3vw,29px); margin-bottom: 15px; border-radius: 14px;
+  border: 1px solid #c2ddd3; background:
+  radial-gradient(ellipse at 95% 70%,#c0e5d8 0%,transparent 53%),
+  linear-gradient(122deg,#f1faf4,#d9efe5);
+}
+.module-head h1, .module-head h2 { font-size: clamp(24px,3.25vw,38px); line-height: 1.18; letter-spacing: -.035em; }
+.module-head p { max-width: 760px; margin-top: 7px; color: #3d5f53; font-size: 13px; line-height: 1.6; }
+.module-head .pill { align-self: end; flex: none; white-space: nowrap; }
+.pill {
+  display: inline-flex; align-items: center; min-height: 24px; padding: 3px 8px;
+  border: 1px solid #cae1d6; border-radius: 5px; color: #366252; background: #f0f9f3;
+  font-size: 11px; font-weight: 650; line-height: 1.4;
+}
+.pill[data-status="pass"] { background: #e9f7ed; color: #185b3f; border-color: #bdddc9; }
+.pill[data-status="fail"] { background: #fff0ed; color: #8a2f25; border-color: #ecc4be; }
+.pill[data-status="warn"] { background: #fffaed; color: #77531b; border-color: #e8d9b4; }
+.workspace-grid { display: grid; grid-template-columns: minmax(230px, .82fr) minmax(0,1.45fr); gap: 13px; align-items: start; }
+.workspace-grid > * { min-width: 0; }
+.module-panel > .panel + .panel { margin-top: 12px; }
+.panel-title { margin: 0 0 5px; font-size: 16px; line-height: 1.4; }
+.module-panel .field-grid { margin-block: 12px; gap: 9px 10px; }
+.module-panel .controls .field-grid { margin-block: 0; }
+.field > :is(input, select), .module-panel textarea, .module-panel .table-wrap input {
+  width: 100%; min-width: 0; min-height: 36px; border: 1px solid #d3e1da;
+  background: #fff; border-radius: 7px; padding: 6px 8px; color: var(--ink); font: inherit; font-size: 13px;
+}
+.module-panel .table-wrap input { padding-inline: 6px; min-width: 62px; }
+.field > :is(input, select):focus, .module-panel .table-wrap input:focus { border-color: #4b9780; }
+.field input[aria-invalid="true"] { border-color: #a94438; color: #933a2e; }
+.review .input-wrap { min-height: 36px; }
+.review .note, .module-footer { font-size: 12px; line-height: 1.65; color: var(--review-dim); }
+.review .note { margin-block: 8px; }
+.module-footer { margin-top: 12px; padding-inline: 3px; }
+.module-footer a { color: #176958; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-block: 10px; }
+.actions:last-child { margin-bottom: 0; }
+.review .button { font-size: 12px; }
+.review .metric small { line-height: 1.55; }
+.review .metric strong { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.review .metric .metric-label { font-size: 12px; }
+.review .table-wrap th, .review .table-wrap td { vertical-align: middle; }
+.review .table-wrap .stack-table td, .review .table-wrap .stack-table th { text-align: left; }
+.review .methods { margin-top: 13px; }
+.review .dashboard { grid-template-columns: minmax(245px, .8fr) minmax(0,1.65fr); gap: 13px; }
+.review .panel { border-color: var(--review-border); }
+.review summary { cursor: pointer; }
+.review .compact-metrics { margin-top: 12px; }
+.review .compact-metrics .metric { min-height: 68px; }
+.review .compact-metrics strong { font-size: clamp(17px,2.4vw,27px); }
+.review .batch-table { min-width: 730px; }
+.review .batch-output { min-width: 695px; }
+.batch-output :is(th,td):nth-child(-n+2) { text-align: left; }
+.batch-table th, .batch-table td { padding: 5px 5px; }
+.batch-table .text-field { min-width: 89px !important; }
+.batch-table button { border: 1px solid #dbe7e2; background: #fff; border-radius: 6px; color: #6b3b34; font-size: 11px; padding: 6px; white-space: nowrap; }
+.batch-table button:hover { background: #fff0ed; }
+.filter-field { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; color: var(--review-dim); font-size: 12px; }
+.filter-field select { min-height: 31px; border: 1px solid #d5e0da; background: #fff; color: var(--ink); border-radius: 5px; padding: 4px 6px; font: inherit; }
+.verification-summary { margin-block: 10px 13px; }
+.verification-table th:first-child { min-width: 78px; }
+.verification-table td { text-align: left; }
+.verification-table td:nth-child(2) { width: 25%; }
+.review .badge-row { display: flex; gap: 5px; flex-wrap: wrap; }
+@media(max-width:1050px) {
+  .review-shell { grid-template-columns: 150px minmax(0,1fr); gap: 13px; }
+  .review .dashboard { grid-template-columns: minmax(220px,.85fr) minmax(0,1.45fr); }
+}
+@media(max-width:830px) {
+  .review-shell { display: block; padding-top: 13px; }
+  .review-rail { position: static; margin-bottom: 13px; }
+  .review-nav { display: flex; flex-wrap: wrap; gap: 4px; padding: 7px; }
+  .review-nav .nav-heading, .rail-tip { display: none; }
+  .review-nav a { padding: 7px 9px; }
+}
+@media(max-width:640px) {
+  .review .dashboard, .workspace-grid { grid-template-columns: minmax(0,1fr); }
+  .module-head { align-items: start; flex-direction: column; min-height: 0; gap: 8px; }
+  .module-head .pill { align-self: start; }
+  .review-shell { padding-inline: 10px; }
+  .review .field > :is(input, select), .review .table-wrap input { font-size: 16px; }
+  .review .metrics { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:385px) {
+  .review-nav a { padding-inline: 7px; font-size: 12px; }
+  .review-mode { font-size: 10px; }
+  .review-brand strong { font-size: 13px; }
+  .review .metrics { gap: 5px; }
+  .review .metric { padding-inline: 6px; }
+}
+@media print {
+  .review-bar,.review-rail { display: none; }
+  .review-shell { display: block; padding: 0; }
+  .module-head { background: #fff; min-height: 0; }
+}
+  </style>
+  <script>
+  (() => {
+    'use strict';
+    const registry = new Map();
+
+    function complianceCosts(parameters, spot = parameters.spotPrice) {
+      const { quota, forwardPrice, strike, premium, forwardShare } = parameters;
+      const forward = quota * forwardPrice / 10000;
+      const option = quota * (Math.min(spot, strike) + premium) / 10000;
+      const weight = forwardShare / 100;
+      return [quota * spot / 10000, forward, option, weight * forward + (1 - weight) * option];
+    }
+
+    function downloadCsv(filename, rows) {
+      const text = rows.map(row => row.map(value => {
+        let cell = String(value ?? '');
+        if (typeof value === 'string' && /^[\s]*[=+\-@\t\r]/u.test(cell) &&
+            !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/u.test(cell)) {
+          cell = "'" + cell;
+        }
+        return '"' + cell.replaceAll('"', '""') + '"';
+      }).join(',')).join('\r\n');
+      const url = URL.createObjectURL(new Blob(['\uFEFF', text], { type: 'text/csv;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    window.CarbonReview = Object.freeze({
+      register(moduleId, checks) { registry.set(moduleId, checks); },
+      checks() { return [...registry.entries()]; },
+      complianceCosts,
+      downloadCsv
+    });
+  })();
+  </script>
+</head>
+<body class="review">
+  <header class="review-bar">
+    <div class="review-brand">
+      <span class="review-mark" aria-hidden="true">∿</span>
+      <div><strong>电碳金融仿真系统</strong><span>技术报告评审版</span></div>
+    </div>
+    <div class="review-mode"><i aria-hidden="true"></i> 浏览器本地运行</div>
+  </header>
+  <div class="review-shell">
+    <aside class="review-rail">
+      <nav class="review-nav" aria-label="仿真模块">
+        <span class="nav-heading">仿真与评价</span>
+        <a href="#compliance" aria-controls="compliance" aria-current="page">碳履约成本</a>
+        <a href="#pricing" aria-controls="pricing">碳期权估值</a>
+        <a href="#emissions" aria-controls="emissions">电碳关联核算</a>
+        <a href="#finance" aria-controls="finance">绿色金融评价</a>
+        <span class="nav-heading">分组与复核</span>
+        <a href="#batch" aria-controls="batch">分组情景测算</a>
+        <a href="#verification" aria-controls="verification">自动检测</a>
+      </nav>
+      <div class="rail-tip">从报告案例开始，可直接修改参数，或导入多组数据批量测算。</div>
+    </aside>
+    <main class="review-main" id="reviewMain">
+      
+<section class="module-panel" id="compliance">
+  <header class="module-head">
+    <div><h1>火电企业碳履约成本仿真</h1><p>输入配额缺口、到期碳价及合约条件，比较现货、远期、看涨期权与组合对冲的履约支出。</p></div>
+    <span class="pill">报告第 4.1.4、5.3 节</span>
+  </header>
+    <div class="dashboard">
+      <section class="panel controls" aria-labelledby="parameterTitle">
+        <h2 id="parameterTitle">仿真参数</h2>
+        <p class="panel-note">修改参数后，结果和图表即时更新。</p>
+
+        <form id="parameters" novalidate>
+          <fieldset>
+            <legend>到期碳价情景</legend>
+            <div class="scenario-grid">
+              <button type="button" class="scenario" data-spot="70" aria-pressed="false">低价示例</button>
+              <button type="button" class="scenario" data-spot="85" aria-pressed="false">中价示例</button>
+              <button type="button" class="scenario" data-spot="98.06" aria-pressed="true">政策收紧</button>
+            </div>
+          </fieldset>
+
+          <div class="field-grid">
+            <label class="field full-width" for="quota">
+              <span>配额缺口</span>
+              <span class="input-wrap">
+                <input type="number" id="quota" min="0" step="any" inputmode="decimal" value="100000" required>
+                <span class="unit">吨</span>
+              </span>
+            </label>
+
+            <label class="field full-width" for="spotPrice">
+              <span>到期现货碳价</span>
+              <span class="input-wrap">
+                <input type="number" id="spotPrice" min="0" step="any" inputmode="decimal" value="98.06" required>
+                <span class="unit">元/吨</span>
+              </span>
+            </label>
+
+            <label class="field" for="forwardPrice">
+              <span>远期锁定价</span>
+              <span class="input-wrap">
+                <input type="number" id="forwardPrice" min="0" step="any" inputmode="decimal" value="75.20" aria-describedby="exampleNote" required>
+                <span class="unit">元/吨</span>
+              </span>
+            </label>
+
+            <label class="field" for="strike">
+              <span>期权执行价</span>
+              <span class="input-wrap">
+                <input type="number" id="strike" min="0" step="any" inputmode="decimal" value="80.00" aria-describedby="exampleNote" required>
+                <span class="unit">元/吨</span>
+              </span>
+            </label>
+
+            <label class="field" for="premium">
+              <span>期权费</span>
+              <span class="input-wrap">
+                <input type="number" id="premium" min="0" step="any" inputmode="decimal" value="3.37" aria-describedby="exampleNote" required>
+                <span class="unit">元/吨</span>
+              </span>
+            </label>
+
+            <label class="field" for="forwardShare">
+              <span>组合远期占比</span>
+              <span class="input-wrap">
+                <input type="number" id="forwardShare" min="0" max="100" step="any" inputmode="decimal" value="70" required>
+                <span class="unit">%</span>
+              </span>
+            </label>
+          </div>
+
+          <p class="assumption" id="exampleNote">报告未单列远期锁定价、期权执行价和期权费。这里用一组示例参数复算报告公布的组合支出。</p>
+          <p class="error" id="formError" role="alert" hidden></p>
+          <div class="form-actions">
+            <button type="button" class="button primary" id="download">导出结果 CSV</button>
+            <button type="reset" class="button secondary" id="reset">恢复报告案例</button>
+          </div>
+        </form>
+      </section>
+
+      <div class="results">
+        <section class="metrics" id="metrics" aria-label="核心测算结果" aria-live="polite" aria-atomic="true">
+          <div class="metric">
+            <p class="metric-label">现货采购支出</p>
+            <div class="metric-value"><strong id="spotTotal">—</strong><span>万元</span></div>
+            <small>全部按到期现货价采购</small>
+          </div>
+          <div class="metric featured">
+            <p class="metric-label">组合履约支出</p>
+            <div class="metric-value"><strong id="mixTotal">—</strong><span>万元</span></div>
+            <small id="allocation">远期与看涨期权组合</small>
+          </div>
+          <div class="metric">
+            <p class="metric-label">现货 − 组合</p>
+            <div class="metric-value"><strong id="difference">—</strong><span>万元</span></div>
+            <small id="differenceNote">按同一配额缺口比较</small>
+          </div>
+        </section>
+
+        <section class="panel plot-panel" aria-labelledby="chartTitle">
+          <div class="panel-header">
+            <div>
+              <h2 id="chartTitle">碳价变动下的履约支出</h2>
+              <p class="panel-note">竖线标出当前情景的到期碳价。</p>
+            </div>
+            <span class="chart-axis">履约支出（万元）</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart" role="img" aria-label="四种方案的履约支出随到期碳价变化的曲线"></canvas>
+          </div>
+          <div class="legend" id="legend" aria-label="图例"></div>
+        </section>
+
+        <section class="panel detail-panel" aria-labelledby="resultTitle">
+          <div class="panel-header">
+            <div>
+              <h2 id="resultTitle">四种方案测算明细</h2>
+              <p class="panel-note" id="detailNote">当前情景的履约总支出</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table aria-label="四种履约方案成本对比">
+              <thead>
+                <tr><th scope="col">方案</th><th scope="col">支出（万元）</th><th scope="col">较现货节省（万元）</th></tr>
+              </thead>
+              <tbody id="strategyRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <details class="panel methods">
+      <summary>计算口径和案例来源</summary>
+      <div class="method-body">
+        <p>现货方案按到期现货价乘以配额缺口，远期方案按锁定价乘以配额缺口。看涨期权方案采用现货价和执行价中的较低值，再加上每吨期权费。组合方案按远期和期权的覆盖比例加权。</p>
+        <p>示例将期权费直接计入总支出，暂不考虑资金时间价值、手续费及信用成本。表中的正值表示较现货节省，负值表示较现货多支出。</p>
+        <p>技术报告第 4.1.4 节给出四种比较方案，第 5.3 节记载的政策收紧案例采用 10 万吨缺口、70% 远期和 30% 看涨期权，到期现货价为 98.06 元/吨。报告给出的现货及组合支出分别为 980.60 万元和 776.51 万元。</p>
+      </div>
+    </details>
+</section>
+<script>
+(() => {
+
+  'use strict';
+
+  const fields = {
+    quota: '配额缺口',
+    spotPrice: '到期现货碳价',
+    forwardPrice: '远期锁定价',
+    strike: '期权执行价',
+    premium: '期权费',
+    forwardShare: '组合远期占比'
+  };
+  const byId = (id) => document.getElementById(id);
+  const inputs = Object.fromEntries(Object.keys(fields).map((id) => [id, byId(id)]));
+  const form = byId('parameters');
+  const canvas = byId('chart');
+  const context = canvas.getContext('2d');
+  const scenarios = [...form.querySelectorAll('.scenario')];
+  const download = byId('download');
+
+  const amount = new Intl.NumberFormat('zh-CN', {
+    minimumFractionDigits: 2, maximumFractionDigits: 2
+  });
+  const quantity = new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 4 });
+  const axisNumber = new Intl.NumberFormat('zh-CN', { notation: 'compact', maximumFractionDigits: 2 });
+
+  const strategies = [
+    { name: '现货采购', color: '#58738d', dash: [] },
+    { name: '全部远期', color: '#a35614', dash: [8, 5], legendStyle: 'dashed' },
+    { name: '全部看涨期权', color: '#7351a0', dash: [3, 4], legendStyle: 'dotted' },
+    { name: '远期 + 看涨期权', shortName: '远期 + 期权', color: '#00766c', dash: [] }
+  ];
+  let current = null;
+
+  for (const strategy of strategies) {
+    const item = document.createElement('span');
+    const line = document.createElement('i');
+    line.className = 'series-line';
+    line.style.setProperty('--series-color', strategy.color);
+    if (strategy.legendStyle) line.classList.add(strategy.legendStyle);
+    line.setAttribute('aria-hidden', 'true');
+    item.append(line, strategy.shortName ?? strategy.name);
+    byId('legend').append(item);
+  }
+
+  function readParameters() {
+    const invalid = [];
+    const parameters = {};
+    for (const [id, input] of Object.entries(inputs)) {
+      const value = input.valueAsNumber;
+      const valid = input.validity.valid && Number.isFinite(value);
+      input.setAttribute('aria-invalid', String(!valid));
+      if (!valid) invalid.push(fields[id]);
+      parameters[id] = value;
+    }
+    if (invalid.length) {
+      const message = invalid.includes(fields.forwardShare)
+        ? '远期占比请输入 0–100 之间的数，其余参数请输入非负数字。'
+        : '请为以下参数输入非负数字：' + invalid.join('、') + '。';
+      showError(message);
+      return null;
+    }
+
+    const priceCeiling = Math.max(parameters.spotPrice, parameters.forwardPrice,
+      parameters.strike, parameters.premium, 1);
+    const valueCeiling = priceCeiling * Math.max(parameters.quota, 1) * 2;
+    if (!Number.isSafeInteger(Math.ceil(valueCeiling * 100))) {
+      showError('参数超出可按分计算的范围，请调低价格或配额缺口。');
+      return null;
+    }
+    showError('');
+    return parameters;
+  }
+
+  function showError(message) {
+    const error = byId('formError');
+    if (error.textContent !== message) error.textContent = message;
+    error.hidden = !message;
+  }
+
+  function costs(parameters, spot = parameters.spotPrice) {
+    return window.CarbonReview.complianceCosts(parameters, spot);
+  }
+
+  function formatDelta(value) {
+    const formatted = amount.format(Math.abs(value));
+    return (value < 0 && formatted !== '0.00' ? '−' : '') + formatted;
+  }
+
+  function render() {
+    const parameters = readParameters();
+    for (const button of scenarios) {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.spot) === inputs.spotPrice.valueAsNumber));
+    }
+    current = parameters;
+    download.disabled = !parameters;
+    const values = parameters ? costs(parameters) : [];
+    const delta = parameters ? values[0] - values[3] : 0;
+    byId('spotTotal').textContent = parameters ? amount.format(values[0]) : '—';
+    byId('mixTotal').textContent = parameters ? amount.format(values[3]) : '—';
+    byId('difference').textContent = parameters ? formatDelta(delta) : '—';
+    byId('allocation').textContent = parameters
+      ? '远期 ' + quantity.format(parameters.forwardShare) + '% · 期权 ' + quantity.format(100 - parameters.forwardShare) + '%'
+      : '远期与看涨期权组合';
+    byId('differenceNote').textContent = parameters && formatDelta(delta) !== '0.00'
+      ? (delta > 0 ? '组合支出低于现货' : '组合支出高于现货')
+      : (parameters ? '两种方案的支出相同（按显示精度）' : '按同一配额缺口比较');
+    byId('detailNote').textContent = parameters
+      ? '到期碳价 ' + quantity.format(parameters.spotPrice) + ' 元/吨 · 配额缺口 ' + quantity.format(parameters.quota) + ' 吨'
+      : '请先修正仿真参数。';
+
+    const tbody = byId('strategyRows');
+    const rows = strategies.map((strategy, index) => {
+      const row = document.createElement('tr');
+      const name = document.createElement('th');
+      name.scope = 'row';
+      name.textContent = strategy.name;
+      if (index === 3) row.classList.add('combination');
+      const total = document.createElement('td');
+      total.textContent = parameters ? amount.format(values[index]) : '—';
+      const saving = document.createElement('td');
+      saving.textContent = parameters && index !== 0 ? formatDelta(values[0] - values[index]) : '—';
+      row.append(name, total, saving);
+      return row;
+    });
+    tbody.replaceChildren(...rows);
+    canvas.setAttribute('aria-label', parameters
+      ? '成本对比曲线，当前到期碳价 ' + quantity.format(parameters.spotPrice) + ' 元/吨。' +
+        strategies.map((strategy, index) => strategy.name + ' ' + amount.format(values[index]) + ' 万元').join('，') + '。'
+      : '仿真参数有误，图表暂停。');
+    drawChart();
+  }
+
+  function niceStep(raw) {
+    const magnitude = 10 ** Math.floor(Math.log10(raw));
+    return [1, 2, 2.5, 5, 10].find((factor) => factor * magnitude >= raw) * magnitude;
+  }
+
+  function drawChart() {
+    if (!context) return;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    if (!width || !height) return;
+    const ratio = window.devicePixelRatio || 1;
+    const pixelWidth = Math.round(width * ratio);
+    const pixelHeight = Math.round(height * ratio);
+    if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
+    if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    context.clearRect(0, 0, width, height);
+    context.font = '12px system-ui, sans-serif';
+
+    if (!current) {
+      context.fillStyle = '#4d6274';
+      context.textAlign = 'center';
+      context.fillText('修正仿真参数后可查看图表', width / 2, height / 2);
+      return;
+    }
+
+    const { spotPrice, strike, forwardPrice } = current;
+    const reference = Math.max(spotPrice, strike, forwardPrice, 1);
+    const xStep = niceStep(reference * 1.18 / (width < 460 ? 4 : 6));
+    const maxX = Math.ceil(reference * 1.18 / xStep) * xStep;
+    const yStep = niceStep(Math.max(...costs(current, maxX), 1) / 4);
+    const maxY = Math.ceil(Math.max(1, ...costs(current, maxX)) / yStep) * yStep;
+    const bounds = { left: 49, right: width - 18, top: 15, bottom: height - 52 };
+    const x = (value) => bounds.left + value / maxX * (bounds.right - bounds.left);
+    const y = (value) => bounds.bottom - value / maxY * (bounds.bottom - bounds.top);
+
+    context.lineWidth = 1;
+    context.fillStyle = '#4d6274';
+    context.textBaseline = 'middle';
+    context.textAlign = 'right';
+    const yTicks = Math.round(maxY / yStep);
+    for (let i = 0; i <= yTicks; i++) {
+      const value = i * yStep;
+      context.strokeStyle = i === 0 ? '#a1b2be' : '#e0e8eb';
+      context.beginPath();
+      context.moveTo(bounds.left, y(value));
+      context.lineTo(bounds.right, y(value));
+      context.stroke();
+      context.fillText(axisNumber.format(value), bounds.left - 8, y(value));
+    }
+
+    context.textAlign = 'center';
+    const xTicks = Math.round(maxX / xStep);
+    for (let i = 0; i <= xTicks; i++) {
+      const value = i * xStep;
+      context.fillText(axisNumber.format(value), x(value), bounds.bottom + 17);
+    }
+    context.fillText('到期现货碳价（元/吨）', (bounds.left + bounds.right) / 2, height - 10);
+
+    context.strokeStyle = '#839aa2';
+    context.setLineDash([4, 4]);
+    context.beginPath();
+    context.moveTo(x(spotPrice), bounds.top);
+    context.lineTo(x(spotPrice), bounds.bottom);
+    context.stroke();
+
+    const breakpoints = [0, Math.min(strike, maxX), maxX];
+    const curveCosts = breakpoints.map((price) => costs(current, price));
+    const selected = costs(current);
+    strategies.forEach((strategy, index) => {
+      context.lineWidth = index === 3 ? 3 : 2;
+      context.strokeStyle = strategy.color;
+      context.setLineDash(strategy.dash);
+      context.beginPath();
+      context.moveTo(x(breakpoints[0]), y(curveCosts[0][index]));
+      for (let i = 1; i < breakpoints.length; i++) {
+        context.lineTo(x(breakpoints[i]), y(curveCosts[i][index]));
+      }
+      context.stroke();
+    });
+
+    context.setLineDash([]);
+    strategies.forEach((strategy, index) => {
+      context.beginPath();
+      context.arc(x(spotPrice), y(selected[index]), index === 3 ? 5 : 3.5, 0, Math.PI * 2);
+      context.fillStyle = '#fff';
+      context.fill();
+      context.lineWidth = 2;
+      context.strokeStyle = strategy.color;
+      context.stroke();
+    });
+  }
+
+  function downloadResults() {
+    if (!current) return;
+    const parameters = current;
+    const values = costs(parameters);
+    const lines = [
+      ['火电企业碳履约成本仿真', '情景模拟'],
+      ...Object.entries(fields).map(([id, name]) => {
+        const unit = id === 'quota' ? '吨' : (id === 'forwardShare' ? '%' : '元/吨');
+        return [name, parameters[id], unit];
+      }),
+      ['期权占比', 100 - parameters.forwardShare, '%'],
+      [],
+      ['方案', '支出（万元）', '较现货节省（万元）'],
+      ...strategies.map((strategy, index) => [
+        strategy.name, amount.format(values[index]).replaceAll(',', ''),
+        formatDelta(values[0] - values[index]).replaceAll(',', '').replace('−', '-')
+      ]),
+      [],
+      ['口径', '期权费直接计入总支出，未计入资金时间价值、手续费及信用成本'],
+      ['来源', '技术报告第 4.1.4 节及第 5.3 节'],
+      ['参数说明', '报告未单列远期锁定价、期权执行价和期权费，默认值为用于复算汇总支出的示例假设']
+    ];
+    const csv = lines.map((row) => row.map((cell) => '"' + String(cell).replaceAll('"', '""') + '"').join(',')).join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '火电企业碳履约仿真结果.csv';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  form.addEventListener('input', render);
+  form.addEventListener('submit', (event) => event.preventDefault());
+  form.addEventListener('reset', () => requestAnimationFrame(render));
+  for (const button of scenarios) {
+    button.addEventListener('click', () => {
+      inputs.spotPrice.value = button.dataset.spot;
+      render();
+    });
+  }
+  download.addEventListener('click', downloadResults);
+  new ResizeObserver(drawChart).observe(canvas);
+  render();
+  
+  const baseline = { quota:100000, spotPrice:98.06, forwardPrice:75.20, strike:80, premium:3.37, forwardShare:70 };
+  const near = (a,b) => Math.abs(a-b) < 1e-8;
+  window.CarbonReview.register('compliance', [
+    {name:'报告政策收紧案例',expected:'现货 980.60、组合 776.51、差额 204.09 万元',run:() => {
+      const [spot,,,mix] = costs(baseline);
+      return {pass:near(spot,980.60) && near(mix,776.51) && near(spot-mix,204.09),
+        actual:[spot,mix,spot-mix].map(value => value.toFixed(2)).join(' / ') + ' 万元'};
+    }},
+    {name:'低价情景',expected:'70 元/吨时，组合支出比现货多 46.51 万元',run:() => {
+      const [spot,,,mix] = costs(baseline,70);
+      return {pass:near(mix-spot,46.51),actual:'组合比现货多 ' + (mix-spot).toFixed(2) + ' 万元'};
+    }},
+    {name:'远期占比边界',expected:'0% 等于全期权，100% 等于全远期',run:() => {
+      const atZero = costs({...baseline,forwardShare:0});
+      const atHundred = costs({...baseline,forwardShare:100});
+      return {pass:near(atZero[3],atZero[2]) && near(atHundred[3],atHundred[1]),
+        actual:atZero[3].toFixed(2) + ' / ' + atHundred[3].toFixed(2) + ' 万元'};
+    }},
+    {name:'零配额缺口',expected:'四种支出均为 0',run:() => {
+      const result = costs({...baseline,quota:0});
+      return {pass:result.every(value => value === 0),actual:result.join(' / ')};
+    }}
+  ]);
+})();
+</script>
+
+<section id="pricing" class="module-panel" hidden>
+  <style>
+    #pricing .pricing-values { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 12px; }
+    #pricing .pricing-results .metric strong { font-size: clamp(19px, 2.7vw, 32px); }
+    #pricing .pricing-results .metric small { margin-top: 3px; }
+    #pricing .pricing-results .metric-value { align-items: baseline; white-space: normal; }
+    #pricing .pricing-results .metric-value > span { flex: none; }
+    #pricing .pricing-checks { margin-top: 13px; }
+    #pricing .pricing-checks th:first-child { min-width: 126px; }
+    #pricing .pricing-checks th, #pricing .pricing-checks td { text-align: left; }
+    #pricing .pricing-checks .number { font-variant-numeric: tabular-nums; }
+    #pricing .pricing-checks td:last-child { min-width: 135px; }
+    #pricing .pricing-model-table td:last-child, #pricing .pricing-model-table th:last-child { text-align: left; }
+    #pricing .pricing-model-table td:last-child { width: 35%; }
+    #pricing .pricing-model-table th:first-child { min-width: 112px; }
+    #pricing .pricing-method { margin-top: 7px; }
+    #pricing .pricing-method summary { color: var(--review-accent, #176958); font-weight: 650; }
+    @media (max-width: 640px) {
+      #pricing .pricing-results .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #pricing .pricing-results .metric strong { font-size: clamp(19px, 5vw, 28px); }
+      #pricing .pricing-checks table { min-width: 520px; }
+    }
+  </style>
+  <header class="module-head">
+    <div><h1>碳期权估值</h1><p>在同一组参数下估算欧式看涨和看跌期权，比较解析解、二叉树和蒙特卡洛结果。</p></div>
+    <span class="pill">每吨配额 · 理论估值</span>
+  </header>
+
+  <div class="workspace-grid">
+    <section class="panel" aria-labelledby="pricingInputsTitle">
+      <h2 class="panel-title" id="pricingInputsTitle">估值参数</h2>
+      <form id="pricingForm" novalidate>
+        <div class="field-grid">
+          <label class="field"><span>当前碳价（元/吨）</span><input id="pricingSpot" type="number" inputmode="decimal" min="0.01" max="1000000" step="any" value="75" required></label>
+          <label class="field"><span>执行价（元/吨）</span><input id="pricingStrike" type="number" inputmode="decimal" min="0.01" max="1000000" step="any" value="80" required></label>
+          <label class="field"><span>年化波动率（%）</span><input id="pricingVolatility" type="number" inputmode="decimal" min="0" max="200" step="any" value="25" required></label>
+          <label class="field"><span>年化无风险利率（%）</span><input id="pricingRate" type="number" inputmode="decimal" min="-20" max="30" step="any" value="2" required></label>
+          <label class="field"><span>剩余日历天数</span><input id="pricingDays" type="number" inputmode="numeric" min="0" max="3650" step="1" value="90" required></label>
+          <label class="field"><span>CRR 二叉树步数</span><input id="pricingSteps" type="number" inputmode="numeric" min="1" max="1000" step="1" value="200" required></label>
+          <label class="field"><span>蒙特卡洛路径数</span><input id="pricingPaths" type="number" inputmode="numeric" min="100" max="100000" step="1" value="20000" required></label>
+          <label class="field"><span>随机种子</span><input id="pricingSeed" type="number" inputmode="numeric" min="0" max="4294967295" step="1" value="42" required></label>
+        </div>
+        <p class="note">以 365 天折成年，采用连续复利。默认参数用于演示模型。</p>
+        <p class="error" id="pricingError" role="alert" hidden></p>
+        <div class="actions">
+          <button class="button primary" type="submit">运行估值</button>
+          <button class="button secondary" type="reset">恢复默认参数</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel pricing-results" aria-labelledby="pricingResultsTitle">
+      <h2 class="panel-title" id="pricingResultsTitle">估值结果</h2>
+      <p class="note" id="pricingState" role="status"></p>
+      <div class="metrics pricing-values compact-metrics" aria-label="Black–Scholes 理论估值">
+        <article class="metric">
+          <div class="metric-label">B–S 看涨期权</div>
+          <div class="metric-value"><strong id="pricingCall">—</strong><span>元/吨</span></div>
+          <small>取得按执行价购买配额的权利</small>
+        </article>
+        <article class="metric">
+          <div class="metric-label">B–S 看跌期权</div>
+          <div class="metric-value"><strong id="pricingPut">—</strong><span>元/吨</span></div>
+          <small>取得按执行价出售配额的权利</small>
+        </article>
+      </div>
+      <div class="table-wrap" tabindex="0" aria-label="不同模型估值结果">
+        <table class="pricing-model-table">
+          <thead><tr><th scope="col">模型</th><th scope="col">看涨<br>元/吨</th><th scope="col">看跌<br>元/吨</th><th scope="col">计算条件</th></tr></thead>
+          <tbody id="pricingRows"></tbody>
+        </table>
+      </div>
+      <div class="actions"><button class="button secondary" type="button" id="pricingExport">导出估值 CSV</button></div>
+    </section>
+  </div>
+
+  <section class="panel pricing-checks" aria-labelledby="pricingChecksTitle">
+    <h2 class="panel-title" id="pricingChecksTitle">平价、收敛与抽样复核</h2>
+    <div class="table-wrap" tabindex="0" aria-label="估值复核指标，可横向滚动">
+      <table>
+        <thead><tr><th scope="col">复核指标</th><th scope="col">看涨期权</th><th scope="col">看跌期权</th><th scope="col">解释</th></tr></thead>
+        <tbody id="pricingCheckRows"></tbody>
+      </table>
+    </div>
+    <p class="note" id="pricingParity"></p>
+    <details class="note pricing-method">
+      <summary>计算口径</summary>
+      <p>标的配额价格采用风险中性几何布朗运动，计算中设标的收益率和其他持有成本为零。Black–Scholes 使用解析公式。CRR 二叉树按风险中性概率逐层贴现。蒙特卡洛直接抽取到期价格，贴现欧式到期收益，随机种子固定时可重算。</p>
+      <p>蒙特卡洛标准误采用样本标准差除以样本量的平方根，近似 95% 置信区间按估值 ± 1.96 倍标准误计算。极端参数下，有限样本可能没有观测到非零收益；窄区间仍需结合解析解和样本有效性复核。</p>
+    </details>
+  </section>
+  <p class="module-footer">价格以每吨配额计。模型比较用于演示理论估值和数值误差。</p>
+</section>
+<script>
+(() => {
+  'use strict';
+  const panel = document.getElementById('pricing');
+  const read = (name) => panel.querySelector('#pricing' + name);
+  const api = window.CarbonReview;
+  const form = read('Form');
+  const error = read('Error');
+  const exportButton = read('Export');
+  let current = null;
+  const fields = [
+    ['Spot', '当前碳价', '元/吨'],
+    ['Strike', '执行价', '元/吨'],
+    ['Volatility', '年化波动率', '%'],
+    ['Rate', '年化无风险利率', '%'],
+    ['Days', '剩余日历天数', '天'],
+    ['Steps', 'CRR 二叉树步数', '步'],
+    ['Paths', '蒙特卡洛路径数', '条'],
+    ['Seed', '随机种子', '']
+  ];
+  const preset = { spot: 75, strike: 80, sigma: .25, rate: .02, years: 90 / 365, steps: 200, paths: 20000, seed: 42 };
+  const exactBenchmark = { spot: 100, strike: 100, sigma: .20, rate: .05, years: 1, steps: 200, paths: 20000, seed: 42 };
+  const standard95 = 1.96;
+  const priceFormat = new Intl.NumberFormat('zh-CN', {
+    minimumFractionDigits: 4, maximumFractionDigits: 4, useGrouping: false
+  });
+  const countFormat = new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 0 });
+
+  function price(value) {
+    if (value == null) return '—';
+    return priceFormat.format(Math.abs(value) < .00005 ? 0 : value);
+  }
+
+  function normalCdf(z) {
+    if (z <= -8) return 0;
+    if (z >= 8) return 1;
+    const x = Math.abs(z);
+    // Composite Simpson integration of the normal density over [0, |z|].
+    const segments = Math.max(2, 2 * Math.ceil(x / .005));
+    const step = x / segments;
+    let sum = 1 + Math.exp(-.5 * x * x);
+    for (let index = 1; index < segments; index += 1) {
+      const node = index * step;
+      const weight = index % 2 === 0 ? 2 : 4;
+      sum += weight * Math.exp(-.5 * node * node);
+    }
+    return .5 + Math.sign(z) * sum * step / (3 * Math.sqrt(2 * Math.PI));
+  }
+
+  function discountedDeterministic(spot, strike, rate, years) {
+    const forwardDifference = spot - strike * Math.exp(-rate * years);
+    return { call: Math.max(0, forwardDifference), put: Math.max(0, -forwardDifference) };
+  }
+
+  function blackScholes({ spot, strike, sigma, rate, years }) {
+    if (years === 0 || sigma === 0) return discountedDeterministic(spot, strike, rate, years);
+    const volatility = sigma * Math.sqrt(years);
+    const d1 = (Math.log(spot / strike) + rate * years) / volatility + .5 * volatility;
+    const d2 = d1 - volatility;
+    const discountedStrike = strike * Math.exp(-rate * years);
+    return {
+      call: Math.max(0, spot * normalCdf(d1) - discountedStrike * normalCdf(d2)),
+      put: Math.max(0, discountedStrike * normalCdf(-d2) - spot * normalCdf(-d1))
+    };
+  }
+
+  function binomial({ spot, strike, sigma, rate, years }, steps) {
+    if (years === 0 || sigma === 0) return discountedDeterministic(spot, strike, rate, years);
+    const dt = years / steps;
+    const logUp = sigma * Math.sqrt(dt);
+    const probability = Math.expm1(rate * dt + logUp) / Math.expm1(2 * logUp);
+    if (!Number.isFinite(probability) || probability < 0 || probability > 1) return null;
+
+    const call = new Float64Array(steps + 1);
+    const put = new Float64Array(steps + 1);
+    const discount = Math.exp(-rate * dt);
+    const downWeight = discount * (1 - probability);
+    const upWeight = discount * probability;
+    for (let index = 0; index <= steps; index += 1) {
+      const terminal = spot * Math.exp((2 * index - steps) * logUp);
+      call[index] = Math.max(0, terminal - strike);
+      put[index] = Math.max(0, strike - terminal);
+    }
+    for (let level = steps - 1; level >= 0; level -= 1) {
+      for (let index = 0; index <= level; index += 1) {
+        call[index] = downWeight * call[index] + upWeight * call[index + 1];
+        put[index] = downWeight * put[index] + upWeight * put[index + 1];
+      }
+    }
+
+    return { call: call[0], put: put[0] };
+  }
+
+  function normalGenerator(seed) {
+    let state = seed >>> 0;
+    let spare = null;
+    function uniform() {
+      // Mulberry32, mapped strictly inside the unit interval for Box–Muller.
+      state = (state + 0x6D2B79F5) >>> 0;
+      let mixed = state;
+      mixed = Math.imul(mixed ^ mixed >>> 15, mixed | 1);
+      mixed ^= mixed + Math.imul(mixed ^ mixed >>> 7, mixed | 61);
+      return (((mixed ^ mixed >>> 14) >>> 0) + .5) / 4294967296;
+    }
+    return () => {
+      if (spare !== null) {
+        const value = spare;
+        spare = null;
+        return value;
+      }
+      const radius = Math.sqrt(-2 * Math.log(uniform()));
+      const theta = 2 * Math.PI * uniform();
+      spare = radius * Math.sin(theta);
+      return radius * Math.cos(theta);
+    };
+  }
+
+  function accumulator() {
+    let count = 0;
+    let mean = 0;
+    let squaredDeviations = 0;
+    return {
+      add(value) {
+        count += 1;
+        const delta = value - mean;
+        mean += delta / count;
+        squaredDeviations += delta * (value - mean);
+      },
+      result() {
+        return { mean, error: Math.sqrt(Math.max(0, squaredDeviations / (count - 1)) / count) };
+      }
+    };
+  }
+
+  function monteCarlo({ spot, strike, sigma, rate, years, paths, seed }) {
+    if (years === 0 || sigma === 0) {
+      const values = discountedDeterministic(spot, strike, rate, years);
+      return { ...values, callError: 0, putError: 0, parityError: 0 };
+    }
+    const draw = normalGenerator(seed);
+    const discountedStrike = strike * Math.exp(-rate * years);
+    const volatility = sigma * Math.sqrt(years);
+    const drift = -.5 * volatility * volatility;
+    const calls = accumulator();
+    const puts = accumulator();
+    const differences = accumulator();
+    for (let index = 0; index < paths; index += 1) {
+      // Discounted GBM terminal price removes the risk-free drift exactly.
+      const discountedTerminal = spot * Math.exp(drift + volatility * draw());
+      const difference = discountedTerminal - discountedStrike;
+      calls.add(Math.max(0, difference));
+      puts.add(Math.max(0, -difference));
+      differences.add(difference);
+    }
+    const call = calls.result();
+    const put = puts.result();
+    return { call: call.mean, put: put.mean, callError: call.error, putError: put.error, parityError: differences.result().error };
+  }
+
+  function calculate(parameters) {
+    return {
+      parameters,
+      analytic: blackScholes(parameters),
+      tree: binomial(parameters, parameters.steps),
+      doubled: binomial(parameters, parameters.steps * 2),
+      sampled: monteCarlo(parameters)
+    };
+  }
+
+  function confidenceText(mean, standardError) {
+    const margin = standard95 * standardError;
+    return '[' + price(mean - margin) + ', ' + price(mean + margin) + ']';
+  }
+
+  function parityTarget(parameters) {
+    return parameters.spot - parameters.strike * Math.exp(-parameters.rate * parameters.years);
+  }
+
+  function parityResidual(values, parameters) {
+    return values ? values.call - values.put - parityTarget(parameters) : null;
+  }
+
+  function parityTolerance(parameters) {
+    return Math.max(1, parameters.spot, parameters.strike * Math.exp(-parameters.rate * parameters.years)) * 1e-9;
+  }
+
+  function absoluteErrors(values, benchmark) {
+    return values ? [Math.abs(values.call - benchmark.call), Math.abs(values.put - benchmark.put)] : [null, null];
+  }
+
+  function readForm() {
+    let first = null;
+    const numbers = fields.map(([id, label]) => {
+      const input = read(id);
+      const valid = input.validity.valid && Number.isFinite(input.valueAsNumber);
+      input.setAttribute('aria-invalid', String(!valid));
+      if (!valid && !first) first = { input, label };
+      return input.valueAsNumber;
+    });
+    if (first) {
+      const type = first.input.step === '1' ? '整数' : '数值';
+      error.textContent = first.label + '须为 ' + first.input.min + ' 至 ' + first.input.max + ' 之间的' + type + '。';
+      error.hidden = false;
+      first.input.focus();
+      return null;
+    }
+    error.hidden = true;
+    const [spot, strike, volatility, rate, days, steps, paths, seed] = numbers;
+    return { spot, strike, sigma: volatility / 100, rate: rate / 100, years: days / 365, steps, paths, seed, inputValues: numbers };
+  }
+
+  function fillTable(body, rows) {
+    body.replaceChildren(...rows.map(([heading, ...values]) => {
+      const row = document.createElement('tr');
+      const title = document.createElement('th');
+      title.scope = 'row';
+      title.textContent = heading;
+      row.append(title);
+      for (const value of values) {
+        const cell = document.createElement('td');
+        cell.textContent = value;
+        row.append(cell);
+      }
+      return row;
+    }));
+  }
+
+  function makeRows({ parameters, analytic, tree, doubled, sampled }) {
+    const deterministic = parameters.years === 0 || parameters.sigma === 0;
+    const invalidTree = '风险中性概率超出 [0,1]，可增加步数';
+    const treeCondition = tree ? countFormat.format(parameters.steps) + ' 步' : invalidTree;
+    const sampleCondition = countFormat.format(parameters.paths) + ' 条，种子 ' + parameters.seed;
+    const models = [
+      ['Black–Scholes', price(analytic.call), price(analytic.put), deterministic ? '确定性结果' : '解析公式'],
+      ['CRR 二叉树', price(tree?.call), price(tree?.put), deterministic ? '确定性结果' : treeCondition],
+      ['蒙特卡洛', price(sampled.call), price(sampled.put), deterministic ? '确定性结果' : sampleCondition]
+    ];
+    const baseErrors = absoluteErrors(tree, analytic);
+    const refinedErrors = absoluteErrors(doubled, analytic);
+    const stepTitle = '树步数 ' + countFormat.format(parameters.steps);
+    const doubleTitle = '树步数 ' + countFormat.format(parameters.steps * 2);
+    const modelError = (values, title, condition) => [title, price(values[0]), price(values[1]), condition];
+    const within = (expected, mean, se) => Math.abs(expected - mean) <= standard95 * se + parityTolerance(parameters);
+    const callInside = within(analytic.call, sampled.call, sampled.callError);
+    const putInside = within(analytic.put, sampled.put, sampled.putError);
+    const checks = [
+      modelError(baseErrors, stepTitle + ' 与 B–S 绝对差', tree ? '同一组模型参数' : invalidTree),
+      modelError(refinedErrors, doubleTitle + ' 与 B–S 绝对差', doubled ? '加倍步数后重算' : invalidTree),
+      ['蒙特卡洛标准误', price(sampled.callError), price(sampled.putError), '估值单位为元/吨'],
+      ['蒙特卡洛近似 95% 区间', confidenceText(sampled.call, sampled.callError), confidenceText(sampled.put, sampled.putError), '估值 ± 1.96 × 标准误'],
+      ['B–S 估值与抽样区间', callInside ? '区间内' : '区间外', putInside ? '区间内' : '区间外', '给定样本和种子的对照结果']
+    ];
+    return { models, checks };
+  }
+
+  function render() {
+    const parameters = readForm();
+    if (!parameters) {
+      current = null;
+      exportButton.disabled = true;
+      read('State').textContent = '当前保留上次估值。修正参数后重新运行。';
+      return;
+    }
+    current = calculate(parameters);
+    const { analytic, tree, sampled } = current;
+    const { models, checks } = makeRows(current);
+    fillTable(read('Rows'), models);
+    fillTable(read('CheckRows'), checks);
+    read('Call').textContent = price(analytic.call);
+    read('Put').textContent = price(analytic.put);
+    read('State').textContent = parameters.years === 0 || parameters.sigma === 0
+      ? '到期天数或波动率为零，采用确定性贴现值。'
+      : '按当前参数完成估值。';
+    const residual = (values) => {
+      const value = parityResidual(values, parameters);
+      return value == null ? '—' : (Math.abs(value) < 1e-14 ? '0' : value.toExponential(2));
+    };
+    read('Parity').textContent = '看涨看跌平价残差 C − P − [S₀ − K·exp(−rT)]（元/吨）。B–S '
+      + residual(analytic) + '，CRR ' + residual(tree) + '，蒙特卡洛 ' + residual(sampled)
+      + '（配对样本标准误 ' + price(sampled.parityError) + '）。二叉树误差随步数可能振荡。';
+    exportButton.disabled = false;
+  }
+
+  function markEdited(event) {
+    if (event.target.matches('input')) event.target.removeAttribute('aria-invalid');
+    error.hidden = true;
+    current = null;
+    exportButton.disabled = true;
+    read('State').textContent = '当前显示上次估值。点击“运行估值”更新结果。';
+  }
+
+  function exportResults() {
+    if (!current) return;
+    const { parameters, analytic, tree, sampled } = current;
+    const { models, checks } = makeRows(current);
+    api.downloadCsv('碳期权估值与复核.csv', [
+      ['参数', '输入值', '单位'],
+      ...fields.map(([, label, unit], index) => [label, parameters.inputValues[index], unit]),
+      ['到期年数（365 天）', parameters.years],
+      [],
+      ['模型', '看涨（元/吨）', '看跌（元/吨）', '计算条件'],
+      ...models,
+      [],
+      ['复核指标', '看涨期权', '看跌期权', '说明'],
+      ...checks,
+      ['平价残差（元/吨）', 'Black–Scholes', 'CRR 二叉树', '蒙特卡洛', '蒙特卡洛配对标准误'],
+      ['C−P−[S₀−K·exp(−rT)]', parityResidual(analytic, parameters),
+        parityResidual(tree, parameters), parityResidual(sampled, parameters), sampled.parityError]
+    ]);
+  }
+
+  function close(first, second, tolerance) {
+    return Math.abs(first - second) <= tolerance;
+  }
+
+  api.register('pricing', [
+    {
+      name: 'B–S 标准数值基准', expected: 'S₀=K=100，σ=20%，r=5%，T=1 年。看涨 10.450584，看跌 5.573526',
+      run() {
+        const { call, put } = blackScholes(exactBenchmark);
+        return { pass: close(call, 10.4505835722, 1e-8) && close(put, 5.5735260223, 1e-8),
+          actual: call.toFixed(6) + ' / ' + put.toFixed(6) + ' 元/吨' };
+      }
+    },
+    {
+      name: '看涨看跌平价', expected: '默认参数下，B–S 与 200 步、400 步 CRR 的绝对残差均小于 0.000001 元/吨',
+      run() {
+        const residuals = [blackScholes(preset), binomial(preset, 200), binomial(preset, 400)]
+          .map((result) => Math.abs(parityResidual(result, preset)));
+        return { pass: residuals.every((residual) => residual < 1e-6), actual: residuals.map((residual) => residual.toExponential(3)).join(' / ') };
+      }
+    },
+    {
+      name: 'CRR 步数复核', expected: '默认参数下 400 步和 B–S 的看涨、看跌绝对差均小于 0.02 元/吨',
+      run() {
+        const errors = absoluteErrors(binomial(preset, 400), blackScholes(preset));
+        return { pass: errors.every((value) => value !== null && value < .02), actual: errors.map(price).join(' / ') + ' 元/吨' };
+      }
+    },
+    {
+      name: '蒙特卡洛种子与抽样误差', expected: '默认种子复算一致，两个估值与 B–S 的绝对差均在 3 倍标准误内',
+      run() {
+        const expected = blackScholes(preset);
+        const first = monteCarlo(preset);
+        const repeated = monteCarlo(preset);
+        const differences = absoluteErrors(first, expected);
+        const reproducible = Object.keys(first).every((key) => first[key] === repeated[key]);
+        return { pass: reproducible && differences[0] <= 3 * first.callError && differences[1] <= 3 * first.putError,
+          actual: (reproducible ? '复算一致' : '复算有差异') + '。误差 ' + differences.map(price).join(' / ')
+            + '，标准误 ' + [first.callError, first.putError].map(price).join(' / ') + ' 元/吨' };
+      }
+    },
+    {
+      name: '到期和零波动率边界', expected: '到期日给出内在价值。零波动率下三个方法返回同一确定性贴现值',
+      run() {
+        const maturity = calculate({ ...preset, years: 0, spot: 90 });
+        const zeroVolatility = calculate({ ...preset, sigma: 0 });
+        const maturityResults = [maturity.analytic, maturity.tree, maturity.doubled, maturity.sampled];
+        const deterministicPut = preset.strike * Math.exp(-preset.rate * preset.years) - preset.spot;
+        const volatilityResults = [zeroVolatility.analytic, zeroVolatility.tree, zeroVolatility.doubled, zeroVolatility.sampled];
+        const matches = maturityResults.every((value) => value?.call === 10 && value.put === 0)
+          && volatilityResults.every((value) => value?.call === 0 && close(value.put, deterministicPut, 1e-10))
+          && zeroVolatility.sampled.putError === 0;
+        return { pass: matches, actual: '到期看涨 / 看跌 10 / 0。零波动看涨 / 看跌 0 / ' + price(zeroVolatility.analytic.put) + ' 元/吨' };
+      }
+    }
+  ]);
+
+  form.addEventListener('input', markEdited);
+  form.addEventListener('submit', (event) => { event.preventDefault(); render(); });
+  form.addEventListener('reset', () => requestAnimationFrame(render));
+  exportButton.addEventListener('click', exportResults);
+  render();
+})();
+</script>
+
+<section id="emissions" class="module-panel" hidden aria-labelledby="emissions-title">
+  <header class="module-head">
+    <div><h2 id="emissions-title">电碳关联核算</h2><p>以实际发电量估算排放，对照同口径的核查数据并计算配额缺口。</p></div>
+    <span class="pill">演示数据</span>
+  </header>
+  <div class="workspace-grid">
+    <section class="panel" aria-labelledby="emissions-input-title">
+      <h3 id="emissions-input-title" class="panel-title">发电与排放数据</h3>
+      <p class="note">实际发电量、核查排放和配额应属于同一主体、期间和核算边界。合同交易电量仅供参照。</p>
+      <form data-emissions-form>
+        <div class="field-grid">
+          <label class="field">实际发电量（MWh）<input type="number" name="generation" min="0" max="1000000000000" step="any" required value="1200000"></label>
+          <label class="field">合同交易电量（MWh）<input type="number" name="contract" min="0" max="1000000000000" step="any" required value="1300000"></label>
+          <label class="field">排放因子（吨 CO₂/MWh）<input type="number" name="factor" min="0" max="100" step="any" required value="0.82"></label>
+          <label class="field">核查排放量（吨 CO₂）<input type="number" name="verified" min="0" max="1000000000000" step="any" required value="970000"></label>
+          <label class="field">可用碳配额（吨）<input type="number" name="allocation" min="0" max="1000000000000" step="any" required value="900000"></label>
+          <label class="field">情景碳价（元/吨）<input type="number" name="price" min="0" max="1000000" step="any" required value="98.06"></label>
+        </div>
+        <details class="markets-details">
+          <summary>电价传导情景设定</summary>
+          <div class="field-grid">
+            <label class="field">参考碳价（元/吨）<input type="number" name="reference" min="0" max="1000000" step="any" required value="80"></label>
+            <label class="field">假设传导系数（0–1）<input type="number" name="coefficient" min="0" max="1" step="any" required value="0.4"></label>
+          </div>
+        </details>
+        <div class="actions">
+          <button class="button primary" type="submit">运行核算</button>
+          <button class="button secondary" type="button" data-emissions-export>导出 CSV</button>
+        </div>
+        <p class="error" data-emissions-error role="status" hidden>请填写有效的发电、排放和价格参数。计算结果将在参数有效后更新。</p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="emissions-output-title">
+      <h3 id="emissions-output-title" class="panel-title">核算结果</h3>
+      <div data-emissions-computed>
+      <div class="metrics" aria-live="polite">
+        <div class="metric"><span>估算排放量</span><strong data-emissions-value="estimated">—</strong><small>吨 CO₂</small></div>
+        <div class="metric"><span>估算配额缺口</span><strong data-emissions-value="deficit">—</strong><small>吨</small></div>
+        <div class="metric"><span>估算履约支出</span><strong data-emissions-value="expense">—</strong><small>万元</small></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">校验及敏感性指标</th><th scope="col">结果</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">估算排放量相对核查值的有符号偏差（吨 CO₂）</th><td data-emissions-value="difference">—</td></tr>
+            <tr><th scope="row">相对偏差（偏差 ÷ 核查排放量）</th><td data-emissions-value="relative">—</td></tr>
+            <tr><th scope="row">假设电价变化（元/MWh）</th><td data-emissions-value="transmission">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+      <p class="note">估算排放量为实际发电量与排放因子的乘积。估算缺口取估算排放量减可用配额与零中的较大值，支出按情景碳价计算。</p>
+      <p class="note">假设电价变化为传导系数 × 排放因子 ×（情景碳价 − 参考碳价）。系数按情景设定，仅表示碳价变化在给定假设下对应的电价变化。</p>
+    </section>
+  </div>
+</section>
+
+<section id="finance" class="module-panel" hidden aria-labelledby="finance-title">
+  <header class="module-head">
+    <div><h2 id="finance-title">绿色金融支持效能评价</h2><p>用 2021 至 2024 年示例指标计算综合指数、耦合协调度和相对障碍度。</p></div>
+    <span class="pill">示例指标 · 演示数据</span>
+  </header>
+  <section class="panel" aria-labelledby="finance-input-title">
+    <h3 id="finance-input-title" class="panel-title">指标数据</h3>
+    <p class="note" id="finance-data-note">11 项指标名称、分组和年度数值为可编辑数值演示所设。年度数据为假设值，按所列单位输入。</p>
+    <form data-finance-form aria-describedby="finance-data-note">
+      <div class="table-wrap">
+        <table class="markets-data-table">
+          <thead><tr><th scope="col">维度</th><th scope="col">指标（单位）</th><th scope="col">方向</th><th scope="col">2021</th><th scope="col">2022</th><th scope="col">2023</th><th scope="col">2024</th></tr></thead>
+          <tbody data-finance-inputs></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button type="submit" class="button primary">计算评价结果</button>
+        <button type="button" class="button secondary" data-finance-reset>恢复示例值</button>
+        <button type="button" class="button secondary" data-finance-export>导出 CSV</button>
+      </div>
+      <p class="error" data-finance-error role="status" hidden>请填写完整、有效的年度指标数值。百分比应在 0 至 100 之间。</p>
+    </form>
+  </section>
+  <section class="panel markets-finance-results" data-finance-computed aria-labelledby="finance-output-title">
+    <h3 id="finance-output-title" class="panel-title">年度综合评价</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">年份</th><th scope="col">资源供给</th><th scope="col">转型进展</th><th scope="col">市场协同</th><th scope="col">综合指数 T</th><th scope="col">耦合度 C</th><th scope="col">协调度 D</th></tr></thead>
+        <tbody data-finance-results></tbody>
+      </table>
+    </div>
+    <h3 class="panel-title">指标障碍度</h3>
+    <p class="note">下表按四年障碍度均值降序排列。障碍度越高，该指标在本组演示数据中对综合指数与满分之间差距的贡献占比越大。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">指标</th><th scope="col">2021</th><th scope="col">2022</th><th scope="col">2023</th><th scope="col">2024</th><th scope="col">平均障碍度</th></tr></thead>
+        <tbody data-finance-obstacles></tbody>
+      </table>
+    </div>
+    <p class="note">正向指标按 (值 − 最小值) ÷ 极差归一化，负向指标按 (最大值 − 值) ÷ 极差归一化。极差为零时取 0.5。三个维度各占 1/3，维度内指标等权。</p>
+    <p class="note">T 为三个维度得分的算术平均。C 为三个维度得分的几何平均与 T 之比，T 为零时取零。D = √(C × T)。指标障碍度按各指标加权缺口占当年总加权缺口的比重计算。总缺口为零时障碍度未定义，平均障碍度只计有定义年份。</p>
+    <aside class="module-footer">
+      <p>原报告第 4.1.3 节另载实证结果。2021 至 2024 年综合指数由 0.1971 升至 0.9893，耦合协调度由 0.4254 升至 0.9946，全国碳市场成交量平均障碍度为 28.14%。上表计算使用本界面的演示数据。</p>
+    </aside>
+  </section>
+</section>
+
+<style>
+  #emissions .metrics { margin-block: 12px 14px; }
+  #emissions .metric strong { display: block; overflow-wrap: anywhere; }
+  #emissions .note, #finance .note { margin-block: 8px; }
+  #finance .table-wrap { overflow-x: auto; }
+  #finance .markets-data-table { min-width: 745px; }
+  #finance .markets-data-table input { width: 100%; min-width: 70px; font-variant-numeric: tabular-nums; }
+  #finance .markets-finance-results { margin-top: 15px; }
+  #finance .markets-finance-results .table-wrap { margin-bottom: 15px; }
+  #finance .markets-finance-results th, #finance .markets-finance-results td { white-space: nowrap; }
+  #finance .module-footer { margin-top: 12px; }
+  #emissions [data-emissions-computed][hidden], #finance [data-finance-computed][hidden] { display: none; }
+  #emissions button:disabled, #finance button:disabled { cursor: default; opacity: .55; }
+  .markets-details { margin-block: 12px; }
+  .markets-details summary { cursor: pointer; margin-bottom: 7px; }
+</style>
+
+<script>
+(() => {
+  'use strict';
+
+  const emissions = document.getElementById('emissions');
+  const finance = document.getElementById('finance');
+  const emissionsForm = emissions.querySelector('[data-emissions-form]');
+  const financeForm = finance.querySelector('[data-finance-form]');
+  const indicatorRows = finance.querySelector('[data-finance-inputs]');
+  const yearRows = finance.querySelector('[data-finance-results]');
+  const obstacleRows = finance.querySelector('[data-finance-obstacles]');
+  const years = [2021, 2022, 2023, 2024];
+
+  const groups = ['金融资源供给', '绿色转型进展', '市场协同能力'];
+  const indicators = [
+    { group: 0, name: '绿色贷款余额', unit: '万亿元', values: [12, 16, 21, 27] },
+    { group: 0, name: '清洁电源投资', unit: '亿元', values: [3000, 3700, 5100, 5900] },
+    { group: 0, name: '电网工程投资', unit: '亿元', values: [4700, 4900, 5150, 5400] },
+    { group: 0, name: '电力行业绿色债券发行额', unit: '亿元', values: [520, 740, 705, 680] },
+    { group: 1, name: '清洁电源装机占比', unit: '%', values: [40, 44, 49, 53] },
+    { group: 1, name: '非化石能源发电量占比', unit: '%', values: [30, 33, 35, 38] },
+    { group: 1, name: '单位电量碳排放强度', unit: '吨/MWh', lower: true, values: [0.68, 0.65, 0.67, 0.60] },
+    { group: 1, name: '煤电供电煤耗', unit: '克标煤/kWh', lower: true, values: [304, 302, 300, 301] },
+    { group: 2, name: '绿电交易量', unit: '亿千瓦时', values: [12, 100, 430, 760] },
+    { group: 2, name: '全国碳市场成交量', unit: '万吨', values: [17000, 5800, 13500, 16400] },
+    { group: 2, name: '电力市场化交易占比', unit: '%', values: [45, 56, 61, 63] }
+  ];
+
+  const number = (value, places = 2) => value.toLocaleString('zh-CN', { maximumFractionDigits: places });
+  const signed = (value, places = 2) => value === 0 ? number(0) : (value > 0 ? '+' : '−') + number(Math.abs(value), places);
+  const fixed = (value, places = 4) => value.toFixed(places);
+  const ratio = value => value === null ? '—' : fixed(value * 100, 2) + '%';
+
+  function freshIndicators() {
+    return indicators.map(item => [...item.values]);
+  }
+
+  function calculateEmissions({ generation, factor, verified, allocation, price, reference, coefficient }) {
+    const estimated = generation * factor;
+    const deficit = Math.max(estimated - allocation, 0);
+    const difference = estimated - verified;
+    const relative = verified > 0 ? difference / verified : null;
+    const expense = deficit * price / 10000;
+    const transmission = coefficient * factor * (price - reference);
+    return { estimated, deficit, difference, relative, expense, transmission };
+  }
+
+  function emissionValues() {
+    return Object.fromEntries(Array.from(emissionsForm.querySelectorAll('input'), input => [input.name, input.valueAsNumber]));
+  }
+
+  function renderEmissions() {
+    const result = calculateEmissions(emissionValues());
+    const output = {
+      estimated: number(result.estimated),
+      deficit: number(result.deficit),
+      expense: number(result.expense, 4),
+      difference: signed(result.difference),
+      relative: result.relative === null ? '未定义（核查排放量为 0）' : signed(result.relative * 100) + '%',
+      transmission: signed(result.transmission)
+    };
+    for (const [key, value] of Object.entries(output)) {
+      emissions.querySelector('[data-emissions-value="' + key + '"]').textContent = value;
+    }
+  }
+
+  function calculateFinance(inputs) {
+    const normalized = inputs.map((values, index) => {
+      const minimum = Math.min(...values);
+      const maximum = Math.max(...values);
+      const spread = maximum - minimum;
+      return values.map(value => {
+        if (spread === 0) return 0.5;
+        return (indicators[index].lower ? maximum - value : value - minimum) / spread;
+      });
+    });
+
+    const groupSizes = groups.map((_, group) => indicators.filter(item => item.group === group).length);
+    const weights = indicators.map(item => 1 / (groups.length * groupSizes[item.group]));
+
+    const results = years.map((year, yearIndex) => {
+      const scores = groups.map((_, group) => {
+        const subtotal = normalized.reduce((sum, row, index) =>
+          sum + (indicators[index].group === group ? row[yearIndex] : 0), 0);
+        return subtotal / groupSizes[group];
+      });
+      const total = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+      const geometric = Math.cbrt(scores[0] * scores[1] * scores[2]);
+      const coupling = total === 0 ? 0 : Math.min(1, geometric / total);
+      const coordination = Math.sqrt(coupling * total);
+      const gaps = normalized.map((row, index) => (1 - row[yearIndex]) * weights[index]);
+      const totalGap = gaps.reduce((sum, gap) => sum + gap, 0);
+      const shares = gaps.map(gap => totalGap === 0 ? null : gap / totalGap);
+      return { year, scores, total, coupling, coordination, shares };
+    });
+
+    const obstacles = indicators.map((item, index) => {
+      const shares = results.map(result => result.shares[index]);
+      const defined = shares.filter(share => share !== null);
+      const mean = defined.length === 0 ? null : defined.reduce((sum, share) => sum + share, 0) / defined.length;
+      return { name: item.name, shares, mean };
+    }).sort((left, right) => (right.mean ?? -1) - (left.mean ?? -1));
+    return { normalized, results, obstacles };
+  }
+
+  function cell(row, value, heading = false) {
+    const entry = document.createElement(heading ? 'th' : 'td');
+    if (heading) entry.scope = 'row';
+    if (typeof value === 'string') entry.textContent = value;
+    else entry.append(value);
+    row.append(entry);
+  }
+
+  function addResultRow(target, cells) {
+    const row = document.createElement('tr');
+    cells.forEach((value, index) => cell(row, value, index === 0));
+    target.append(row);
+  }
+
+  function buildInputs() {
+    indicators.forEach((indicator, index) => {
+      const row = document.createElement('tr');
+      cell(row, groups[indicator.group]);
+      cell(row, indicator.name + '（' + indicator.unit + '）', true);
+      cell(row, indicator.lower ? '负向' : '正向');
+      years.forEach((year, yearIndex) => {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.name = 'finance-' + index + '-' + yearIndex;
+        input.min = '0';
+        input.max = indicator.unit === '%' ? '100' : '1000000000000';
+        input.step = 'any';
+        input.required = true;
+        input.defaultValue = indicator.values[yearIndex];
+        input.setAttribute('aria-label', year + '年' + indicator.name + '，' + indicator.unit);
+        cell(row, input);
+      });
+      indicatorRows.append(row);
+    });
+  }
+
+  function financeValues() {
+    return indicators.map((_, index) => years.map((_, yearIndex) =>
+      financeForm.elements.namedItem('finance-' + index + '-' + yearIndex).valueAsNumber));
+  }
+
+  function renderFinance() {
+    const { results, obstacles } = calculateFinance(financeValues());
+    yearRows.replaceChildren();
+    obstacleRows.replaceChildren();
+    results.forEach(result => addResultRow(yearRows, [
+      String(result.year), ...result.scores.map(score => fixed(score)), fixed(result.total),
+      fixed(result.coupling), fixed(result.coordination)
+    ]));
+    obstacles.forEach(item => addResultRow(obstacleRows, [item.name, ...item.shares.map(ratio), ratio(item.mean)]));
+  }
+
+  function exportEmissions() {
+    if (!emissionsForm.reportValidity()) return;
+    const input = emissionValues();
+    const result = calculateEmissions(input);
+    window.CarbonReview.downloadCsv('电碳关联核算.csv', [
+      ['类型', '指标', '数值', '单位'],
+      ['输入', '实际发电量', input.generation, 'MWh'],
+      ['输入', '合同交易电量（仅参照）', input.contract, 'MWh'],
+      ['输入', '排放因子', input.factor, '吨 CO₂/MWh'],
+      ['输入', '核查排放量', input.verified, '吨 CO₂'],
+      ['输入', '可用碳配额', input.allocation, '吨'],
+      ['输入', '情景碳价', input.price, '元/吨'],
+      ['输入', '参考碳价', input.reference, '元/吨'],
+      ['输入', '假设传导系数', input.coefficient, '无量纲'],
+      ['结果', '估算排放量', result.estimated, '吨 CO₂'],
+      ['结果', '估算配额缺口', result.deficit, '吨'],
+      ['结果', '估算履约支出', fixed(result.expense, 4), '万元'],
+      ['结果', '有符号偏差', result.difference, '吨 CO₂'],
+      ['结果', '相对偏差', result.relative === null ? '未定义' : fixed(result.relative * 100, 4), '%'],
+      ['结果', '假设电价变化', fixed(result.transmission, 4), '元/MWh']
+    ]);
+  }
+
+  function exportFinance() {
+    if (!financeForm.reportValidity()) return;
+    const inputs = financeValues();
+    const { results, obstacles } = calculateFinance(inputs);
+    window.CarbonReview.downloadCsv('绿色金融评价演示.csv', [
+      ['示例数据'],
+      ['维度', '指标', '单位', '方向', ...years],
+      ...indicators.map((item, index) => [
+        groups[item.group], item.name, item.unit, item.lower ? '负向' : '正向', ...inputs[index]
+      ]),
+      [],
+      ['年份', ...groups, '综合指数 T', '耦合度 C', '协调度 D'],
+      ...results.map(result => [
+        result.year, ...result.scores.map(score => fixed(score)), fixed(result.total),
+        fixed(result.coupling), fixed(result.coordination)
+      ]),
+      [],
+      ['障碍指标', ...years, '平均障碍度'],
+      ...obstacles.map(item => [item.name, ...item.shares.map(ratio), ratio(item.mean)])
+    ]);
+  }
+
+  function updateResult(module, form, key, render) {
+    const valid = form.checkValidity();
+    module.querySelector('[data-' + key + '-computed]').hidden = !valid;
+    module.querySelector('[data-' + key + '-error]').hidden = valid;
+    module.querySelector('[data-' + key + '-export]').disabled = !valid;
+    if (valid) render();
+  }
+
+  const updateEmissions = () => updateResult(emissions, emissionsForm, 'emissions', renderEmissions);
+  const updateFinance = () => updateResult(finance, financeForm, 'finance', renderFinance);
+
+  emissionsForm.addEventListener('submit', event => {
+    event.preventDefault();
+    updateEmissions();
+  });
+  financeForm.addEventListener('submit', event => {
+    event.preventDefault();
+    updateFinance();
+  });
+  emissionsForm.addEventListener('input', updateEmissions);
+  financeForm.addEventListener('input', updateFinance);
+  emissionsForm.addEventListener('invalid', event => {
+    const details = event.target.closest('details');
+    if (details) details.open = true;
+  }, true);
+  emissionsForm.querySelector('[data-emissions-export]').addEventListener('click', exportEmissions);
+  financeForm.querySelector('[data-finance-export]').addEventListener('click', exportFinance);
+  financeForm.querySelector('[data-finance-reset]').addEventListener('click', () => {
+    financeForm.reset();
+    updateFinance();
+  });
+  buildInputs();
+  updateEmissions();
+  updateFinance();
+
+  const close = (actual, expected) => Math.abs(actual - expected) < 1e-8;
+  const emissionsSample = { generation: 1200000, contract: 1300000, factor: 0.82,
+    verified: 970000, allocation: 900000, price: 98.06, reference: 80, coefficient: 0.4 };
+
+  function registerChecks() {
+    if (!window.CarbonReview) return;
+    window.CarbonReview.register('emissions', [
+      { name: '实际发电量映射与配额采购支出', expected: '984,000 吨排放，84,000 吨缺口，823.704 万元',
+        run: () => {
+          const r = calculateEmissions(emissionsSample);
+          return { pass: close(r.estimated, 984000) && close(r.deficit, 84000) && close(r.expense, 823.704),
+            actual: number(r.estimated) + ' 吨排放，' + number(r.deficit) + ' 吨缺口，' + number(r.expense, 4) + ' 万元' };
+        } },
+      { name: '核查偏差与假设电价传导', expected: '+14,000 吨、+1.44%、+5.92 元/MWh',
+        run: () => {
+          const r = calculateEmissions(emissionsSample);
+          return { pass: close(r.difference, 14000) && close(r.relative, 14 / 970) && close(r.transmission, 5.92368),
+            actual: signed(r.difference) + ' 吨、' + signed(r.relative * 100) + '%、' + signed(r.transmission) + ' 元/MWh' };
+        } },
+      { name: '配额盈余与零核查量边界', expected: '缺口和支出为零，相对偏差未定义',
+        run: () => {
+          const r = calculateEmissions({ ...emissionsSample, verified: 0, allocation: 1000000, contract: 0 });
+          return { pass: r.deficit === 0 && r.expense === 0 && r.relative === null && close(r.estimated, 984000),
+            actual: '缺口 ' + r.deficit + '、支出 ' + r.expense + '、相对偏差' + (r.relative === null ? '未定义' : '有定义') };
+        } }
+    ]);
+    window.CarbonReview.register('finance', [
+      { name: '正负向极差归一化', expected: '贷款余额首末年为 0/1，排放强度首末年为 0/1',
+        run: () => {
+          const { normalized } = calculateFinance(freshIndicators());
+          const ends = [normalized[0][0], normalized[0][3], normalized[6][0], normalized[6][3]];
+          return { pass: ends.join(',') === '0,1,0,1', actual: ends.slice(0, 2).join('/') + '、' + ends.slice(2).join('/') };
+        } },
+      { name: '层级等权与耦合协调度', expected: '三个满分维度的 T、C、D 均为 1',
+        run: () => {
+          const data = indicators.map(item => item.lower ? [4, 3, 2, 1] : [1, 2, 3, 4]);
+          const r = calculateFinance(data).results[3];
+          return { pass: r.total === 1 && r.coupling === 1 && r.coordination === 1,
+            actual: [r.total, r.coupling, r.coordination].join('、') };
+        } },
+      { name: '层级权重与障碍度总和', expected: '常量指标各维度为 0.5，组内权重均分、当年障碍度合计 100%',
+        run: () => {
+          const r = calculateFinance(indicators.map(() => [1, 1, 1, 1])).results[0];
+          const sum = r.shares.reduce((total, share) => total + share, 0);
+          const pass = r.scores.every(score => score === 0.5) && close(sum, 1)
+            && close(r.shares[0], 1 / 12) && close(r.shares[8], 1 / 9);
+          return { pass, actual: r.scores.join('、') + '，障碍度合计 ' + ratio(sum) };
+        } },
+      { name: '满分年度障碍度边界', expected: '全体指标达到样本最优时，障碍度未定义',
+        run: () => {
+          const data = indicators.map(item => item.lower ? [4, 3, 2, 1] : [1, 2, 3, 4]);
+          const r = calculateFinance(data).results[3];
+          const unknown = r.shares.filter(share => share === null).length;
+          return { pass: unknown === indicators.length, actual: unknown + ' 项障碍度未定义' };
+        } }
+    ]);
+  }
+
+  if (window.CarbonReview) registerChecks();
+  else document.addEventListener('DOMContentLoaded', registerChecks, { once: true });
+})();
+</script>
+
+<section id="batch" class="module-panel" hidden>
+  <header class="module-head">
+    <div><h1>分组情景测算</h1><p>录入或导入多组履约参数，自动计算每个情景的四种方案支出。按组查看结果并导出复核。</p></div>
+    <span class="pill">单次最多 200 个情景</span>
+  </header>
+
+  <section class="panel" aria-labelledby="batchInputTitle">
+    <h2 class="panel-title" id="batchInputTitle">情景参数表</h2>
+    <p class="note">可直接改表，金额结果随输入更新。报告示例、价格对比和对冲比例的演示参数按组列出。</p>
+    <div class="actions">
+      <button type="button" id="batchAdd" class="button primary">添加情景</button>
+      <button type="button" id="batchImport" class="button secondary">导入参数 CSV</button>
+      <button type="button" id="batchTemplate" class="button secondary">下载演示模板</button>
+      <button type="button" id="batchReset" class="button secondary">恢复演示分组</button>
+      <input id="batchFile" type="file" accept=".csv,text/csv" hidden>
+    </div>
+    <p id="batchFileNotice" class="note" role="status" hidden></p>
+    <div class="table-wrap" tabindex="0" aria-label="可编辑的参数表，可横向滚动">
+      <table class="batch-table">
+        <thead><tr>
+          <th scope="col">组别</th><th scope="col">情景</th><th scope="col">缺口（吨）</th>
+          <th scope="col">现货价（元/吨）</th><th scope="col">远期价（元/吨）</th>
+          <th scope="col">执行价（元/吨）</th><th scope="col">期权费（元/吨）</th>
+          <th scope="col">远期占比（%）</th><th scope="col">操作</th>
+        </tr></thead>
+        <tbody id="batchInputRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="batchOutputTitle">
+    <div class="panel-header">
+      <div><h2 class="panel-title" id="batchOutputTitle">分组结果</h2><p class="panel-note" id="batchSummary" aria-live="polite"></p></div>
+      <div class="actions">
+        <label class="filter-field">查看组别 <select id="batchFilter"><option value="">全部组别</option></select></label>
+        <button type="button" class="button secondary" id="batchExport">导出全部结果</button>
+      </div>
+    </div>
+    <div class="table-wrap" tabindex="0" aria-label="分组结果表，可横向滚动">
+      <table class="batch-output">
+        <thead><tr>
+          <th scope="col">组别</th><th scope="col">情景</th><th scope="col">现货</th>
+          <th scope="col">全远期</th><th scope="col">全期权</th><th scope="col">组合</th>
+          <th scope="col">现货 − 组合</th><th scope="col">校验</th>
+        </tr></thead>
+        <tbody id="batchOutputRows"></tbody>
+      </table>
+    </div>
+    <p class="note">金额单位为万元。最后一列记录输入校验，差额为负表示组合支出较高。</p>
+  </section>
+</section>
+<script>
+(() => {
+  'use strict';
+  const api = window.CarbonReview;
+  const byId = id => document.getElementById(id);
+  const keys = ['group','scenario','quota','spotPrice','forwardPrice','strike','premium','forwardShare'];
+  const headers = ['组别','情景','缺口（吨）','现货价（元/吨）','远期价（元/吨）','执行价（元/吨）','期权费（元/吨）','远期占比（%）'];
+  const limit = 200;
+  const table = byId('batchInputRows');
+  const output = byId('batchOutputRows');
+  const filter = byId('batchFilter');
+  const fileInput = byId('batchFile');
+  const notice = byId('batchFileNotice');
+  const defaultData = [
+    ['价格情景','政策收紧（报告）',100000,98.06,75.20,80,3.37,70],
+    ['价格情景','中价示例',100000,85,75.20,80,3.37,70],
+    ['价格情景','低价示例',100000,70,75.20,80,3.37,70],
+    ['对冲比例','全期权边界',100000,98.06,75.20,80,3.37,0],
+    ['对冲比例','全远期边界',100000,98.06,75.20,80,3.37,100],
+    ['边界检查','无配额缺口',0,98.06,75.20,80,3.37,70]
+  ];
+  const caseFromRow = cells => Object.fromEntries(keys.map((key,i) => [key, String(cells[i] ?? '')]));
+  const money = new Intl.NumberFormat('zh-CN', {minimumFractionDigits:2,maximumFractionDigits:2,useGrouping:false});
+  let records = defaultData.map(caseFromRow);
+  let results = [];
+  let importSequence = 0;
+
+  function parseCsv(text) {
+    const input = text.replace(/^\uFEFF/u, '');
+    const rows = [];
+    let row = [];
+    let cell = '';
+    let inQuotes = false;
+    let closed = false;
+    const endCell = () => { row.push(cell); cell = ''; closed = false; };
+    const endRow = () => {
+      endCell();
+      if (row.some(value => value.trim())) rows.push(row);
+      row = [];
+    };
+
+    for (let i = 0; i < input.length; i++) {
+      const character = input[i];
+      if (inQuotes) {
+        if (character === '"' && input[i+1] === '"') { cell += '"'; i++; }
+        else if (character === '"') { inQuotes = false; closed = true; }
+        else cell += character;
+        continue;
+      }
+      if (character === ',') { endCell(); continue; }
+      if (character === '\r' || character === '\n') {
+        if (character === '\r' && input[i+1] === '\n') i++;
+        endRow();
+        continue;
+      }
+      if (closed) throw new Error('引号字段结束后应接逗号或换行。');
+      if (character === '"') {
+        if (cell) throw new Error('字段内的引号需要用 CSV 双引号转义。');
+        inQuotes = true;
+        continue;
+      }
+      cell += character;
+    }
+    if (inQuotes) throw new Error('CSV 中存在未闭合的双引号。');
+    if (cell || row.length || closed) endRow();
+
+    if (!rows.length || rows[0].length !== headers.length ||
+        headers.some((header, i) => rows[0][i].trim() !== header)) {
+      throw new Error('表头与模板不一致，请下载模板填写。');
+    }
+    if (rows.length < 2 || rows.length > limit + 1) throw new Error('请导入 1–200 个情景。');
+    const cases = rows.slice(1);
+    if (cases.some(cells => cells.length !== headers.length)) throw new Error('每行须有与模板一致的 8 列。');
+    return cases.map(caseFromRow);
+  }
+
+  function evaluate(record) {
+    const invalid = [];
+    for (const key of keys.slice(0,2)) {
+      if (!record[key].trim() || record[key].length > 80) invalid.push(key);
+    }
+    const parameters = {};
+    for (const key of keys.slice(2)) {
+      const candidate = record[key].trim();
+      const value = Number(candidate);
+      if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/u.test(candidate) ||
+          !Number.isFinite(value) || value < 0 || (key === 'forwardShare' && value > 100)) {
+        invalid.push(key);
+      }
+      parameters[key] = value;
+    }
+    if (invalid.length) return {invalid, error: invalid.map(key => headers[keys.indexOf(key)]).join('、') + '有误'};
+
+    const {quota, spotPrice, forwardPrice, strike, premium} = parameters;
+    const priceCeiling = Math.max(spotPrice, forwardPrice, strike, premium, 1);
+    if (!Number.isSafeInteger(Math.ceil(priceCeiling * Math.max(quota, 1) * 200))) {
+      return {invalid: [], error: '价格或缺口超出精度范围'};
+    }
+
+    const values = api.complianceCosts(parameters);
+    return {invalid, values, delta: values[0] - values[3]};
+  }
+
+  function amount(value) {
+    const rendered = money.format(value);
+    return rendered === '-0.00' ? '0.00' : rendered;
+  }
+
+  function setNotice(message) {
+    notice.textContent = message;
+    notice.hidden = !message;
+  }
+
+  function updateResults() {
+    const previousFilter = filter.value;
+    results = records.map(evaluate);
+    const groups = [...new Set(records.map(record => record.group.trim()).filter(Boolean))];
+    filter.replaceChildren(new Option('全部组别',''), ...groups.map(group => new Option(group,group)));
+    if (groups.includes(previousFilter)) filter.value = previousFilter;
+
+    [...table.rows].forEach((row, index) => {
+      for (const input of row.querySelectorAll('input')) {
+        input.setAttribute('aria-invalid', String(results[index].invalid.includes(input.dataset.key)));
+      }
+    });
+    const valid = results.filter(record => !record.error).length;
+    byId('batchSummary').textContent = groups.length + ' 个组别 · ' + records.length + ' 个情景 · ' +
+      valid + ' 个已计算' + (valid < records.length ? ' · ' + (records.length - valid) + ' 个待修正' : '');
+    byId('batchExport').disabled = !records.length;
+    byId('batchAdd').disabled = records.length >= limit;
+    showFiltered();
+  }
+
+  function showFiltered() {
+    output.replaceChildren();
+    records.forEach((record, index) => {
+      const group = record.group.trim();
+      if (filter.value && filter.value !== group) return;
+      const result = results[index];
+      const row = output.insertRow();
+      const amounts = result.error ? Array(5).fill('—') : [...result.values, result.delta].map(amount);
+      for (const value of [group || '—', record.scenario.trim() || '—', ...amounts]) {
+        row.insertCell().textContent = value;
+      }
+      const badge = document.createElement('span');
+      badge.className = 'pill';
+      badge.dataset.status = result.error ? 'fail' : 'pass';
+      badge.textContent = result.error || '已计算';
+      row.insertCell().append(badge);
+    });
+    if (!output.rows.length) {
+      const empty = output.insertRow().insertCell();
+      empty.colSpan = 8;
+      empty.textContent = '添加情景或导入参数后即可测算。';
+    }
+  }
+
+  function renderInput() {
+    table.replaceChildren();
+    records.forEach((record, index) => {
+      const row = table.insertRow();
+      keys.forEach((key, column) => {
+        const input = document.createElement('input');
+        input.type = column < 2 ? 'text' : 'number';
+        if (column < 2) {
+          input.maxLength = 80;
+          input.classList.add('text-field');
+        } else {
+          input.inputMode = 'decimal';
+          input.step = 'any';
+          input.min = '0';
+          if (key === 'forwardShare') input.max = '100';
+        }
+        input.value = record[key];
+        input.dataset.key = key;
+        input.setAttribute('aria-label','情景 ' + (index+1) + ' ' + headers[column]);
+        input.addEventListener('input', () => { record[key] = input.value; updateResults(); });
+        row.insertCell().append(input);
+      });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.textContent = '删除';
+      remove.setAttribute('aria-label', '删除情景 ' + (index+1));
+      remove.addEventListener('click', () => { records.splice(index,1); renderInput(); });
+      row.insertCell().append(remove);
+    });
+    updateResults();
+  }
+
+  byId('batchAdd').addEventListener('click', () => {
+    if (records.length >= limit) return;
+    const line = caseFromRow(defaultData[0]);
+    line.group = '自定义';
+    line.scenario = '新情景 ' + (records.length + 1);
+    records.push(line);
+    renderInput();
+    table.lastElementChild.querySelector('input').focus();
+  });
+  byId('batchReset').addEventListener('click', () => {
+    importSequence++;
+    records = defaultData.map(caseFromRow);
+    filter.value = '';
+    setNotice('');
+    renderInput();
+  });
+  byId('batchTemplate').addEventListener('click', () => api.downloadCsv('碳履约情景参数模板.csv', [headers,...defaultData]));
+  byId('batchImport').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const sequence = ++importSequence;
+    fileInput.value = '';
+    try {
+      if (file.size > 512 * 1024) throw new Error('CSV 超过 512 KB。');
+      const decoded = new TextDecoder('utf-8', {fatal:true}).decode(await file.arrayBuffer());
+      const cases = parseCsv(decoded);
+      if (sequence !== importSequence) return;
+      records = cases;
+      filter.value = '';
+      renderInput();
+      setNotice('已载入 ' + records.length + ' 个情景，并完成输入校验。');
+    } catch (error) {
+      if (sequence !== importSequence) return;
+      setNotice('导入失败。' + (error instanceof TypeError ? '请另存为 UTF-8 编码的 CSV。' : error.message));
+    }
+  });
+  filter.addEventListener('change', showFiltered);
+  byId('batchExport').addEventListener('click', () => {
+    const resultHeaders = ['现货（万元）','全远期（万元）','全期权（万元）','组合（万元）','现货－组合（万元）','校验'];
+    const data = records.map((record, index) => {
+      const result = results[index];
+      return [...keys.map(key => record[key]), ...(result.error
+        ? ['', '', '', '', '', result.error]
+        : [...result.values, result.delta].map(amount).concat('已计算'))];
+    });
+    api.downloadCsv('碳履约分组测算结果.csv', [[...headers, ...resultHeaders], ...data]);
+  });
+
+  api.register('batch', [
+    {name:'演示分组批量计算',expected:'6 个情景均出结果',run:() => {
+      const count = defaultData.map(caseFromRow).map(evaluate).filter(result => !result.error).length;
+      return {pass:count === 6, actual:count + ' 个已计算'};
+    }},
+    {name:'CSV 引号字段',expected:'带逗号的组名完整保留',run:() => {
+      const rows = parseCsv(headers.join(',') + '\r\n"价格,对照",低价,100000,70,75.20,80,3.37,70');
+      return {pass:rows[0].group === '价格,对照', actual:rows[0].group};
+    }},
+    {name:'非法比例校验',expected:'101% 标记错误，其余有效情景照常输出',run:() => {
+      const rows = [caseFromRow(defaultData[0]), caseFromRow(defaultData[2])];
+      rows[0].forwardShare = '101';
+      const outcome = rows.map(evaluate);
+      return {pass:outcome[0].invalid.includes('forwardShare') && Boolean(outcome[1].values),
+        actual:(outcome[0].error || '首行已计算') + '；' + (outcome[1].values ? '次行已计算' : '次行错误')};
+    }}
+  ]);
+  renderInput();
+})();
+</script>
+
+<section id="verification" class="module-panel" hidden>
+  <header class="module-head">
+    <div><h1>自动检测</h1><p>运行内置测试组，逐条比较预期值与实际计算结果。检测使用固定输入，可重复运行和导出。</p></div>
+    <span class="pill">固定测试数据</span>
+  </header>
+  <section class="panel" aria-labelledby="verificationTitle">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title" id="verificationTitle">检测记录</h2>
+        <p class="panel-note" id="verificationMessage" aria-live="polite">尚未执行。自定义情景的输入校验可在各模块查看。</p>
+      </div>
+      <div class="actions">
+        <label class="filter-field">检测范围
+          <select id="verificationScope"><option value="">全部模块</option></select>
+        </label>
+        <button type="button" class="button primary" id="verificationRun">运行全部检测</button>
+        <button type="button" class="button secondary" id="verificationExport" disabled>导出检测记录</button>
+      </div>
+    </div>
+    <div class="metrics compact-metrics verification-summary">
+      <div class="metric"><p class="metric-label">已执行</p><div class="metric-value"><strong id="verificationTotal">—</strong><span>项</span></div></div>
+      <div class="metric featured"><p class="metric-label">通过</p><div class="metric-value"><strong id="verificationPassed">—</strong><span>项</span></div></div>
+      <div class="metric"><p class="metric-label">未通过</p><div class="metric-value"><strong id="verificationFailed">—</strong><span>项</span></div></div>
+    </div>
+    <div class="table-wrap" tabindex="0" aria-label="检测记录，可横向滚动">
+      <table class="verification-table">
+        <thead><tr><th scope="col">模块</th><th scope="col">测试项目</th><th scope="col">预期</th><th scope="col">实测</th><th scope="col">结果</th></tr></thead>
+        <tbody id="verificationRows"><tr><td colspan="5">点击「运行全部检测」查看结果。</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+  <p class="module-footer">通过表示内置测试输入满足对应数值或校验条件。</p>
+</section>
+<script>
+(() => {
+  const byId = id => document.getElementById(id);
+  const moduleNames = {
+    compliance:'碳履约成本', pricing:'碳期权估值', emissions:'电碳关联核算',
+    finance:'绿色金融评价', batch:'分组情景测算'
+  };
+  let report = [];
+  const rows = byId('verificationRows');
+  const scope = byId('verificationScope');
+  const runButton = byId('verificationRun');
+  scope.append(...Object.entries(moduleNames).map(([key,name]) => new Option(name,key)));
+
+  function runAll() {
+    const registered = new Map(window.CarbonReview.checks());
+    report = [];
+    for (const [key,name] of Object.entries(moduleNames)) {
+      if (scope.value && scope.value !== key) continue;
+      const checks = registered.get(key);
+      if (!Array.isArray(checks) || !checks.length) {
+        report.push({module:name,name:'模块接入',expected:'至少一项可执行测试',actual:'无已注册测试',pass:false});
+        continue;
+      }
+      for (const check of checks) {
+        try {
+          const result = check.run();
+          report.push({module:name,name:check.name,expected:check.expected,
+            actual:String(result.actual ?? '无输出'),pass:result.pass === true});
+        } catch (error) {
+          report.push({module:name,name:check.name,expected:check.expected,actual:'执行异常：' + error.message,pass:false});
+        }
+      }
+    }
+
+    const passed = report.filter(check => check.pass).length;
+    const failed = report.length - passed;
+    byId('verificationTotal').textContent = report.length;
+    byId('verificationPassed').textContent = passed;
+    byId('verificationFailed').textContent = failed;
+    const target = moduleNames[scope.value] || '全部模块';
+    byId('verificationMessage').textContent = target + ' · 已执行 ' + report.length + ' 项检测，' + passed + ' 项通过，' + failed + ' 项未通过。';
+    byId('verificationExport').disabled = !report.length;
+    rows.replaceChildren();
+    for (const check of report) {
+      const row = rows.insertRow();
+      for (const key of ['module','name','expected','actual']) row.insertCell().textContent = check[key];
+      const badge = document.createElement('span');
+      badge.className = 'pill';
+      badge.dataset.status = check.pass ? 'pass' : 'fail';
+      badge.textContent = check.pass ? '通过' : '未通过';
+      row.insertCell().append(badge);
+    }
+  }
+
+  scope.addEventListener('change', () => {
+    runButton.textContent = scope.value ? '运行所选模块' : '运行全部检测';
+  });
+  runButton.addEventListener('click', runAll);
+  byId('verificationExport').addEventListener('click', () => window.CarbonReview.downloadCsv('电碳金融仿真检测记录.csv', [
+    ['模块','测试项目','预期','实测','结果'],
+    ...report.map(check => [check.module,check.name,check.expected,check.actual,check.pass ? '通过' : '未通过'])
+  ]));
+})();
+</script>
+
+    </main>
+  </div>
+  <script>
+  (() => {
+    const links = [...document.querySelectorAll('.review-nav a')];
+    const panels = [...document.querySelectorAll('.module-panel')];
+    function showModule() {
+      const requested = location.hash.slice(1);
+      const active = panels.some(panel => panel.id === requested) ? requested : 'compliance';
+      for (const panel of panels) panel.hidden = panel.id !== active;
+      for (const link of links) {
+        if (link.getAttribute('aria-controls') === active) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      }
+    }
+
+    for (const link of links) {
+      link.addEventListener('click', event => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        const target = link.getAttribute('href');
+        if (location.hash !== target) history.pushState(null, '', target);
+        showModule();
+        window.scrollTo(0, 0);
+      });
+    }
+    window.addEventListener('hashchange', showModule);
+    window.addEventListener('popstate', showModule);
+    showModule();
+  })();
+  </script>
+</body>
+</html>
